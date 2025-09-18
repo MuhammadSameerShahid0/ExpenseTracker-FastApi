@@ -1,0 +1,459 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
+import "./Dashboard.css";
+
+const Dashboard = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [latestTransactions, setLatestTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [newCategory, setNewCategory] = useState("");
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [monthlyTransactions, setMonthlyTransactions] = useState(0);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    verifyToken(token);
+  }, [navigate]);
+
+  const verifyToken = async (token) => {
+    try {
+      const response = await fetch("/api/verify-token", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        fetchDashboardData(token, data.user.id);
+      } else {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    } catch (err) {
+      setError("Failed to verify authentication");
+      localStorage.removeItem("token");
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboardData = async (token, userId) => {
+    await Promise.all([
+      fetchTotals(token),
+      fetchTransactionsCount(token),
+      fetchLatestTransactions(token),
+      fetchCategories(token),
+      fetchMonthlyData(token, selectedDate.getFullYear(), selectedDate.getMonth() + 1),
+    ]);
+  };
+
+  // ✅ Fetch total expenses
+  const fetchTotals = async (token) => {
+    try {
+      const res = await fetch("/api/total_amount", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTotalExpenses(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch total expenses:", err);
+    }
+  };
+
+  // ✅ Fetch total transactions
+  const fetchTransactionsCount = async (token) => {
+    try {
+      const res = await fetch("/api/total_transactions", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTotalTransactions(data.total_transactions);
+      }
+    } catch (err) {
+      console.error("Failed to fetch total transactions:", err);
+    }
+  };
+
+  // ✅ Fetch latest 3 transactions
+  const fetchLatestTransactions = async (token) => {
+    try {
+      const res = await fetch("/api/recent_transactions?limit=5", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLatestTransactions(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch latest transactions:", err);
+    }
+  };
+
+  // ✅ Fetch categories
+  const fetchCategories = async (token) => {
+    try {
+      const res = await fetch("/api/categories", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
+
+  // ✅ Fetch monthly totals + transaction counts
+  const fetchMonthlyData = async (token, year, month) => {
+    try {
+      const formattedMonth = month.toString().padStart(2, "0");
+
+      const expenseRes = await fetch(`/api/monthly_total?year=${year}&month=${formattedMonth}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (expenseRes.ok) {
+        const data = await expenseRes.json();
+        setMonthlyExpenses(data);
+      } else {
+        setMonthlyExpenses(0);
+      }
+
+      const txRes = await fetch(`/api/monthly_transactions?year=${year}&month=${formattedMonth}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (txRes.ok) {
+        const data = await txRes.json();
+        setMonthlyTransactions(data);
+      } else {
+        setMonthlyTransactions(0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch monthly data:", err);
+      setMonthlyExpenses(0);
+      setMonthlyTransactions(0);
+    }
+  };
+
+  const handleMonthChange = (newDate) => {
+    setSelectedDate(newDate);
+    setShowMonthPicker(false);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchMonthlyData(token, newDate.getFullYear(), newDate.getMonth() + 1);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newCategory,
+          type: "expense",
+        }),
+      });
+
+      if (res.ok) {
+        const newCat = await res.json();
+        setCategories([...categories, newCat]);
+        setNewCategory("");
+        setShowAddCategory(false);
+      } else {
+        const data = await res.json();
+        setError(data.detail || "Failed to add category");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    }
+  };
+
+  const getExpenseCategories = () => {
+    return categories.filter((category) => category.type === "expense");
+  };
+
+  const MonthPicker = () => {
+    if (!showMonthPicker) return null;
+
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December",
+    ];
+
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
+
+    return (
+      <div className="month-picker-overlay" onClick={() => setShowMonthPicker(false)}>
+        <div className="month-picker" onClick={(e) => e.stopPropagation()}>
+          <div className="month-picker-header">
+            <h3>Select Month</h3>
+            <button className="month-picker-close" onClick={() => setShowMonthPicker(false)}>
+              &times;
+            </button>
+          </div>
+
+          <div className="month-picker-content">
+            <div className="year-selector">
+              {years.map((year) => (
+                <div
+                  key={year}
+                  className={`year-option ${selectedDate.getFullYear() === year ? "selected" : ""}`}
+                  onClick={() => handleMonthChange(new Date(year, selectedDate.getMonth(), 1))}
+                >
+                  {year}
+                </div>
+              ))}
+            </div>
+
+            <div className="month-grid">
+              {months.map((month, index) => (
+                <div
+                  key={index}
+                  className={`month-option ${selectedDate.getMonth() === index ? "selected" : ""}`}
+                  onClick={() => handleMonthChange(new Date(selectedDate.getFullYear(), index, 1))}
+                >
+                  {month.substring(0, 3)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <Navbar />
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-container">
+        <Navbar />
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => navigate("/login")} className="btn btn-primary">
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-container">
+      <Navbar />
+
+      <main className="dashboard-main">
+        <div className="dashboard-stats">
+          <div className="stat-card">
+            <h3>
+              PKR <span style={{ color: "red" }}>{totalExpenses.toFixed(2)}</span>
+            </h3>
+            <p>Total Spent Amount</p>
+          </div>
+
+          <div className="stat-card">
+            <h3>
+              PKR <span style={{ color: "red" }}>{monthlyExpenses.toFixed(2)}</span>
+            </h3>
+            <div className="month-selector-container">
+              <div className="current-month-display" onClick={() => setShowMonthPicker(true)}>
+                {selectedDate.toLocaleString("default", { month: "long" })} {selectedDate.getFullYear()}
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <h3>{totalTransactions}</h3>
+            <p>Transactions</p>
+          </div>
+        </div>
+
+        <div className="dashboard-content">
+          {/* Latest Transactions */}
+          <div className="content-section">
+            <div className="section-header">
+              <h2>Latest Transactions</h2>
+            </div>
+
+            <div className="transactions-list-modern">
+              {latestTransactions.length > 0 ? (
+                latestTransactions.map((transaction) => (
+                  <div key={transaction.id} className="transaction-card">
+                    <div className="transaction-left">
+                      <div className="transaction-icon">
+                        <span>💸</span>
+                      </div>
+                      <div className="transaction-info">
+                        <div className="transaction-description">
+                          {transaction.description || "No description"}
+                        </div>
+                        <div className="transaction-meta">
+                          <span className="transaction-category">{transaction.category_name} • {transaction.payment_method}</span>
+                          <span className="transaction-date">
+                            {new Date(transaction.date).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="transaction-right">
+                      <span className="transaction-amount">
+                        - PKR {transaction.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-data">No transactions yet. Start tracking your expenses!</p>
+              )}
+            </div>
+          </div>
+
+          {/* Expense Distribution */}
+<div className="content-section">
+  <div className="section-header">
+    <h2>Expense Distribution</h2>
+  </div>
+
+  <div className="chart-container">
+    <div className="pie-chart-wrapper">
+      <div className="pie-chart">
+        <div className="chart-slice" style={{ '--percentage': '35%', '--color': '#4361ee' }}>
+          <div className="slice-inner"></div>
+        </div>
+        <div className="chart-slice" style={{ '--percentage': '25%', '--color': '#f72585' }}>
+          <div className="slice-inner"></div>
+        </div>
+        <div className="chart-slice" style={{ '--percentage': '20%', '--color': '#4cc9f0' }}>
+          <div className="slice-inner"></div>
+        </div>
+        <div className="chart-slice" style={{ '--percentage': '15%', '--color': '#f77f00' }}>
+          <div className="slice-inner"></div>
+        </div>
+        <div className="chart-slice" style={{ '--percentage': '5%', '--color': '#7209b7' }}>
+          <div className="slice-inner"></div>
+        </div>
+        <div className="chart-center">
+          <span className="chart-total">PKR {totalExpenses.toFixed(0)}</span>
+          <span className="chart-label">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div className="chart-legend">
+      <div className="legend-item">
+        <div className="color-dot" style={{ backgroundColor: '#4361ee' }}></div>
+        <span className="legend-label">Food & Dining</span>
+        <span className="legend-value">35%</span>
+      </div>
+      <div className="legend-item">
+        <div className="color-dot" style={{ backgroundColor: '#f72585' }}></div>
+        <span className="legend-label">Shopping</span>
+        <span className="legend-value">25%</span>
+      </div>
+      <div className="legend-item">
+        <div className="color-dot" style={{ backgroundColor: '#4cc9f0' }}></div>
+        <span className="legend-label">Transportation</span>
+        <span className="legend-value">20%</span>
+      </div>
+      <div className="legend-item">
+        <div className="color-dot" style={{ backgroundColor: '#f77f00' }}></div>
+        <span className="legend-label">Entertainment</span>
+        <span className="legend-value">15%</span>
+      </div>
+      <div className="legend-item">
+        <div className="color-dot" style={{ backgroundColor: '#7209b7' }}></div>
+        <span className="legend-label">Others</span>
+        <span className="legend-value">5%</span>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+      </main>
+
+      <MonthPicker />
+    </div>
+  );
+};
+
+export default Dashboard;

@@ -1,0 +1,54 @@
+from fastapi import FastAPI, APIRouter, Depends, Request, HTTPException
+from sqlalchemy.orm import Session
+from Factory.AbstractFactory import MySqlServiceFactory
+from Interfaces.IAuthService import IAuthService
+from Models.Database import get_db
+from OAuthandJWT.JWTToken import verify_jwt
+from Schema import AuthSchema
+
+app = FastAPI()
+AuthRouter = APIRouter(tags=["Auth"])
+service_factory = MySqlServiceFactory()
+
+def get_auth_service(db: Session = Depends(get_db)) -> IAuthService:
+    return  service_factory.auth_service(db)
+
+Auth_Db_DI = Depends(get_auth_service)
+
+@AuthRouter.post("/register")
+def register(request_session: Request,
+             request: AuthSchema.UserCreate,
+             services : IAuthService = Auth_Db_DI
+             ):
+    try:
+        result = services.register_user(request, request_session)
+        qr_code = request_session.session.get("2FA QrCode", "")
+        secret_key = request_session.session.get("2FA Secret")
+        return {"message": result, "qr_code_2fa": qr_code, "secret_key_2fa": secret_key}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@AuthRouter.post("/login")
+def login(request_session: Request,
+             request: AuthSchema.LoginRequest,
+             services : IAuthService = Auth_Db_DI
+             ):
+    return services.login(request, request_session)
+
+@AuthRouter.get("/RegistrationVerificationEmailCodeAnd2FAOtp")
+def verification_code_and_otp(request_session: Request,
+                              code : int,
+                              otp : str,
+                              services : IAuthService = Auth_Db_DI):
+    return services.registration_verify_code_and_otp(code, otp, request_session)
+
+@AuthRouter.get("/LoginVerificationEmailCodeAnd2FAOtp")
+def login_verification_code_and_otp(request_session: Request,
+                              code : int,
+                              otp : str,
+                              services : IAuthService = Auth_Db_DI):
+    return services.login_verify_code_and_otp(code, otp, request_session)
+
+@AuthRouter.post("/verify-token")
+def verify_token(payload: dict = Depends(verify_jwt)):
+    return {"user": payload}
