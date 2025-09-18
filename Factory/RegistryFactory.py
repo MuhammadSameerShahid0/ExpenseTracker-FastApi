@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from Services.AuthService import AuthService
 from Services.ExpenseService import ExpenseService
+from Services.AnalyticsService import AnalyticsService
 from Services.EmailService import EmailService
 
 
@@ -10,8 +11,10 @@ class ServiceFactory:
     _services = {
         "auth" : AuthService,
         "expense" : ExpenseService,
+        "analytics" : AnalyticsService,
     }
 
+    @staticmethod
     def get_services(service_type : str, db : Session):
         service_cls = ServiceFactory._services.get(service_type.lower())
         if not service_cls:

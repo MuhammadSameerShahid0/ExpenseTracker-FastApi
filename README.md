@@ -51,6 +51,11 @@ A comprehensive expense tracking application with secure authentication, expense
 - **Passlib** - Password hashing
 - **Alembic** - Database migration tool
 
+### Services
+- **AuthService** - User registration, login, and authentication
+- **ExpenseService** - Expense creation, management, and categorization
+- **AnalyticsService** - Reporting, statistics, and data analysis
+
 ### Frontend
 - **React 18** - JavaScript library for building user interfaces
 - **React Router** - Declarative routing for React
@@ -73,20 +78,25 @@ The application follows a clean architecture pattern with clear separation of co
 ExpenseTracker/
 ├── Backend (FastAPI)
 │   ├── Controllers/        # API route handlers
+│   │   ├── AuthController.py      # Authentication routes
+│   │   ├── ExpenseController.py   # Expense management routes
+│   │   ├── AnalyticsController.py # Analytics and reporting routes
+│   │   └── main.py               # Application entry point
 │   ├── Models/             # Database models
 │   ├── Schema/             # Pydantic data schemas
 │   ├── Services/           # Business logic implementation
+│   │   ├── AuthService.py         # Authentication service
+│   │   ├── ExpenseService.py      # Expense management service
+│   │   └── AnalyticsService.py    # Analytics and reporting service
 │   ├── Interfaces/         # Service interfaces
+│   │   ├── IAuthService.py        # Authentication service interface
+│   │   ├── IExpenseService.py     # Expense management service interface
+│   │   └── IAnalyticsService.py   # Analytics service interface
 │   ├── Factory/            # Service factory patterns
 │   ├── OAuthandJWT/        # Authentication utilities
 │   ├── PasslibPasswordHash/ # Password hashing utilities
 │   ├── TwoFAgoogle/        # Two-factor authentication
 │   └── EmailService/       # Email notification service
-│
-├── Frontend (React)
-│   ├── components/         # Reusable UI components
-│   ├── auth/               # Authentication components
-│   └── assets/             # Static assets
 ```
 
 ## Installation
@@ -196,6 +206,7 @@ ExpenseTracker/
 ### Analytics
 - `GET /api/total_amount` - Get total expense amount
 - `GET /api/monthly_total` - Get monthly expense total
+- `GET /api/monthly_transactions` - Get monthly transaction count
 - `GET /api/total_transactions` - Get total transaction count
 - `GET /api/recent_transactions` - Get recent transactions
 

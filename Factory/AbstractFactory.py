@@ -4,6 +4,7 @@ from Factory.Interface.IAbstractFactory import IAbstractFactory
 from Factory.RegistryFactory import ServiceFactory
 from Interfaces.IAuthService import IAuthService
 from Interfaces.IExpenseService import IExpenseService
+from Interfaces.IAnalyticsService import IAnalyticsService
 
 
 class MySqlServiceFactory(IAbstractFactory):
@@ -12,3 +13,6 @@ class MySqlServiceFactory(IAbstractFactory):
         
     def expense_service(self, db: Session) -> IExpenseService:
         return ServiceFactory.get_services("expense", db)
+        
+    def analytics_service(self, db: Session) -> IAnalyticsService:
+        return ServiceFactory.get_services("analytics", db)

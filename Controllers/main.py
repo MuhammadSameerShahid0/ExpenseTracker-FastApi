@@ -6,6 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from Controllers.AuthController import AuthRouter
 from Controllers.ExpenseController import ExpenseRouter
+from Controllers.AnalyticsController import AnalyticsRouter
 
 load_dotenv()
 
@@ -17,3 +18,4 @@ app.add_middleware(
 
 app.include_router(AuthRouter, prefix="/api")
 app.include_router(ExpenseRouter, prefix="/api")
+app.include_router(AnalyticsRouter, prefix="/api")

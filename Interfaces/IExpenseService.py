@@ -19,19 +19,3 @@ class IExpenseService(ABC):
     @abstractmethod
     def get_categories(self, user_id: int) -> List[CategoryResponse]:
         pass
-
-    @abstractmethod
-    def get_total_expense_amount(self, user_id: int) -> float:
-        pass
-
-    @abstractmethod
-    def get_monthly_expense_amount(self, user_id: int, year: int, month: int) -> float:
-        pass
-
-    @abstractmethod
-    def get_total_transactions(self, user_id: int) -> int:
-        pass
-
-    @abstractmethod
-    def get_recent_transactions(self, user_id: int, limit: int = 5) -> List[ExpenseResponse]:
-        pass
