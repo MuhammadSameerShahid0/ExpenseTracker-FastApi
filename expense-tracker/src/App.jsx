@@ -6,6 +6,7 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/Dashboard';
 import AddExpense from './components/AddExpense';
+import ExpensesList from './components/ExpensesList';
 import { AuthProvider } from './components/auth/AuthContext';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/add-expense" element={<AddExpense />} />
+            <Route path="/expenses-list" element={<ExpensesList />} />
           </Routes>
         </div>
       </Router>

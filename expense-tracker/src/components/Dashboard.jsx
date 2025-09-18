@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [monthlyTransactions, setMonthlyTransactions] = useState(0);
+  const [transactions, setTransactions] = useState([]);
 
   const navigate = useNavigate();
 
@@ -30,6 +31,40 @@ const Dashboard = () => {
 
     verifyToken(token);
   }, [navigate]);
+
+  // Group by category from ALL transactions
+  const categoryTotals = transactions.reduce((acc, tx) => {
+    const catName = tx.category_name || "Uncategorized";
+    acc[catName] = (acc[catName] || 0) + tx.amount;
+    return acc;
+  }, {});
+
+  // ✅ Build pie chart data using categories + transaction totals
+  const pieChartData = categories.map((cat, index) => {
+    const value = categoryTotals[cat.name] || 0; // use category name from categories
+    const percentage = totalExpenses > 0 ? (value / totalExpenses) * 100 : 0;
+    const color = `hsl(${(index * 137) % 360}, 70%, 60%)`;
+
+    return {
+      name: cat.name,
+      value,
+      percentage,
+      color,
+    };
+  });
+
+  // ✅ Calculate slice angles
+  let cumulativeAngle = 0;
+  const pieChartSlices = pieChartData.map((item) => {
+    const angle = (item.value / totalExpenses) * 360;
+    const slice = {
+      ...item,
+      startAngle: cumulativeAngle,
+      endAngle: cumulativeAngle + angle,
+    };
+    cumulativeAngle += angle;
+    return slice;
+  });
 
   const verifyToken = async (token) => {
     try {
@@ -64,9 +99,14 @@ const Dashboard = () => {
     await Promise.all([
       fetchTotals(token),
       fetchTransactionsCount(token),
+      fetchTransactions(token),
       fetchLatestTransactions(token),
       fetchCategories(token),
-      fetchMonthlyData(token, selectedDate.getFullYear(), selectedDate.getMonth() + 1),
+      fetchMonthlyData(
+        token,
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1
+      ),
     ]);
   };
 
@@ -90,6 +130,26 @@ const Dashboard = () => {
     }
   };
 
+  // ✅ Fetch all transactions
+const fetchTransactions = async (token) => {
+  try {
+    const res = await fetch("/api/expenses", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setTransactions(data);
+    }
+  } catch (err) {
+    console.error("Failed to fetch transactions:", err);
+  }
+};
+
   // ✅ Fetch total transactions
   const fetchTransactionsCount = async (token) => {
     try {
@@ -110,10 +170,10 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Fetch latest 3 transactions
+  // ✅ Fetch latest 5 transactions
   const fetchLatestTransactions = async (token) => {
     try {
-      const res = await fetch("/api/recent_transactions?limit=5", {
+      const res = await fetch("/api/recent_transactions?limit=6", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -155,13 +215,16 @@ const Dashboard = () => {
     try {
       const formattedMonth = month.toString().padStart(2, "0");
 
-      const expenseRes = await fetch(`/api/monthly_total?year=${year}&month=${formattedMonth}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const expenseRes = await fetch(
+        `/api/monthly_total?year=${year}&month=${formattedMonth}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (expenseRes.ok) {
         const data = await expenseRes.json();
@@ -170,13 +233,16 @@ const Dashboard = () => {
         setMonthlyExpenses(0);
       }
 
-      const txRes = await fetch(`/api/monthly_transactions?year=${year}&month=${formattedMonth}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const txRes = await fetch(
+        `/api/monthly_transactions?year=${year}&month=${formattedMonth}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (txRes.ok) {
         const data = await txRes.json();
@@ -240,19 +306,35 @@ const Dashboard = () => {
     if (!showMonthPicker) return null;
 
     const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December",
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
 
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
 
     return (
-      <div className="month-picker-overlay" onClick={() => setShowMonthPicker(false)}>
+      <div
+        className="month-picker-overlay"
+        onClick={() => setShowMonthPicker(false)}
+      >
         <div className="month-picker" onClick={(e) => e.stopPropagation()}>
           <div className="month-picker-header">
             <h3>Select Month</h3>
-            <button className="month-picker-close" onClick={() => setShowMonthPicker(false)}>
+            <button
+              className="month-picker-close"
+              onClick={() => setShowMonthPicker(false)}
+            >
               &times;
             </button>
           </div>
@@ -262,8 +344,12 @@ const Dashboard = () => {
               {years.map((year) => (
                 <div
                   key={year}
-                  className={`year-option ${selectedDate.getFullYear() === year ? "selected" : ""}`}
-                  onClick={() => handleMonthChange(new Date(year, selectedDate.getMonth(), 1))}
+                  className={`year-option ${
+                    selectedDate.getFullYear() === year ? "selected" : ""
+                  }`}
+                  onClick={() =>
+                    handleMonthChange(new Date(year, selectedDate.getMonth(), 1))
+                  }
                 >
                   {year}
                 </div>
@@ -274,8 +360,14 @@ const Dashboard = () => {
               {months.map((month, index) => (
                 <div
                   key={index}
-                  className={`month-option ${selectedDate.getMonth() === index ? "selected" : ""}`}
-                  onClick={() => handleMonthChange(new Date(selectedDate.getFullYear(), index, 1))}
+                  className={`month-option ${
+                    selectedDate.getMonth() === index ? "selected" : ""
+                  }`}
+                  onClick={() =>
+                    handleMonthChange(
+                      new Date(selectedDate.getFullYear(), index, 1)
+                    )
+                  }
                 >
                   {month.substring(0, 3)}
                 </div>
@@ -331,8 +423,12 @@ const Dashboard = () => {
               PKR <span style={{ color: "red" }}>{monthlyExpenses.toFixed(2)}</span>
             </h3>
             <div className="month-selector-container">
-              <div className="current-month-display" onClick={() => setShowMonthPicker(true)}>
-                {selectedDate.toLocaleString("default", { month: "long" })} {selectedDate.getFullYear()}
+              <div
+                className="current-month-display"
+                onClick={() => setShowMonthPicker(true)}
+              >
+                {selectedDate.toLocaleString("default", { month: "long" })}{" "}
+                {selectedDate.getFullYear()}
               </div>
             </div>
           </div>
@@ -363,7 +459,9 @@ const Dashboard = () => {
                           {transaction.description || "No description"}
                         </div>
                         <div className="transaction-meta">
-                          <span className="transaction-category">{transaction.category_name} • {transaction.payment_method}</span>
+                          <span className="transaction-category">
+                            {transaction.category_name} • {transaction.payment_method}
+                          </span>
                           <span className="transaction-date">
                             {new Date(transaction.date).toLocaleDateString("en-US", {
                               day: "2-digit",
@@ -383,71 +481,73 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <p className="no-data">No transactions yet. Start tracking your expenses!</p>
+                <p className="no-data">
+                  No transactions yet. Start tracking your expenses!
+                </p>
               )}
             </div>
           </div>
 
           {/* Expense Distribution */}
-<div className="content-section">
-  <div className="section-header">
-    <h2>Expense Distribution</h2>
-  </div>
+          <div className="content-section">
+            <div className="section-header">
+              <h2>Expense Distribution</h2>
+            </div>
 
-  <div className="chart-container">
-    <div className="pie-chart-wrapper">
-      <div className="pie-chart">
-        <div className="chart-slice" style={{ '--percentage': '35%', '--color': '#4361ee' }}>
-          <div className="slice-inner"></div>
-        </div>
-        <div className="chart-slice" style={{ '--percentage': '25%', '--color': '#f72585' }}>
-          <div className="slice-inner"></div>
-        </div>
-        <div className="chart-slice" style={{ '--percentage': '20%', '--color': '#4cc9f0' }}>
-          <div className="slice-inner"></div>
-        </div>
-        <div className="chart-slice" style={{ '--percentage': '15%', '--color': '#f77f00' }}>
-          <div className="slice-inner"></div>
-        </div>
-        <div className="chart-slice" style={{ '--percentage': '5%', '--color': '#7209b7' }}>
-          <div className="slice-inner"></div>
-        </div>
-        <div className="chart-center">
-          <span className="chart-total">PKR {totalExpenses.toFixed(0)}</span>
-          <span className="chart-label">Total</span>
-        </div>
-      </div>
-    </div>
+            <div className="chart-container">
+              <div className="pie-chart-wrapper">
+                <div className="pie-chart">
+                  {pieChartSlices.length > 0 ? (
+                    pieChartSlices.map((slice) => (
+                      <div
+                        key={slice.name}
+                        className="chart-slice"
+                        style={{
+                          "--start": slice.startAngle,
+                          "--value": slice.endAngle - slice.startAngle,
+                          "--color": slice.color,
+                          "--hover-color": `${slice.color.replace(
+                            "60%)",
+                            "70%)"
+                          )}`,
+                        }}
+                        title={`${slice.name}: PKR ${slice.value.toFixed(
+                          2
+                        )} (${slice.percentage.toFixed(1)}%)`}
+                      >
+                        <div className="slice-inner"></div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-data">No expense data available</p>
+                  )}
 
-    <div className="chart-legend">
-      <div className="legend-item">
-        <div className="color-dot" style={{ backgroundColor: '#4361ee' }}></div>
-        <span className="legend-label">Food & Dining</span>
-        <span className="legend-value">35%</span>
-      </div>
-      <div className="legend-item">
-        <div className="color-dot" style={{ backgroundColor: '#f72585' }}></div>
-        <span className="legend-label">Shopping</span>
-        <span className="legend-value">25%</span>
-      </div>
-      <div className="legend-item">
-        <div className="color-dot" style={{ backgroundColor: '#4cc9f0' }}></div>
-        <span className="legend-label">Transportation</span>
-        <span className="legend-value">20%</span>
-      </div>
-      <div className="legend-item">
-        <div className="color-dot" style={{ backgroundColor: '#f77f00' }}></div>
-        <span className="legend-label">Entertainment</span>
-        <span className="legend-value">15%</span>
-      </div>
-      <div className="legend-item">
-        <div className="color-dot" style={{ backgroundColor: '#7209b7' }}></div>
-        <span className="legend-label">Others</span>
-        <span className="legend-value">5%</span>
-      </div>
-    </div>
-  </div>
-</div>
+                  <div className="chart-center">
+                    <span className="chart-total">
+                       {totalExpenses.toFixed(0)}
+                    </span>
+                    <span className="chart-label">Total</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="chart-legend">
+                {pieChartData.map((item) => (
+                  <div key={item.name} className="legend-item">
+                    <div
+                      className="color-dot"
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="legend-label">{item.name}</span>
+                    <span className="legend-percentage">
+                      {item.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 

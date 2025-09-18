@@ -76,8 +76,8 @@ const handleLogoutClick = () => {
             <nav className="nav-links">
               &nbsp;
               &nbsp;
-              <Link to="/expenses-list" className="btn btn-outline">Expenses List</Link>
               <Link to="/add-expense" className="btn btn-outline">Add Expense</Link>
+              <Link to="/expenses-list" className="btn btn-outline">Expenses List</Link>
               <Link to="/reports" className="btn btn-outline">Reports</Link>
             </nav>
           )}

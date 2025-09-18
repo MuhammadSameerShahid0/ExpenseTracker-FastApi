@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import extract
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from datetime import datetime
 
@@ -58,7 +58,7 @@ class ExpenseService(IExpenseService):
     def get_expenses(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ExpenseResponse]:
         expenses = self.db.query(TransactionModel).filter(
             TransactionModel.user_id == user_id
-        ).offset(skip).limit(limit).all()
+        ).order_by(TransactionModel.date.desc()).offset(skip).limit(limit).all()
         
         expense_responses = []
         for expense in expenses:
@@ -68,7 +68,8 @@ class ExpenseService(IExpenseService):
                 amount=expense.amount,
                 description=expense.description,
                 date=expense.date,
-                category_name=category.name if category else "Unknown"
+                category_name=category.name if category else "Unknown",
+                payment_method=expense.payment_method if expense.payment_method is not None else "Unknown"
             ))
         
         return expense_responses
@@ -113,17 +114,11 @@ class ExpenseService(IExpenseService):
         ]
 
     def get_total_expense_amount(self, user_id: int) -> float:
-        total_amount = self.db.query(TransactionModel).filter(
+        total = self.db.query(func.sum(TransactionModel.amount)).filter(
             TransactionModel.user_id == user_id
-        ).all()
-
-        if total_amount:
-            amount_total = []
-            for transaction in total_amount:
-                amount_total.append(transaction.amount)
-            return sum(amount_total)
-        else:
-            return 0.0
+        ).scalar()
+        
+        return float(total) if total else 0.0
 
 
     def get_monthly_expense_amount(self, user_id: int, year: int, month: int) -> float:
@@ -140,6 +135,13 @@ class ExpenseService(IExpenseService):
     def get_total_transactions(self, user_id: int) -> int:
         return self.db.query(TransactionModel).filter(
             TransactionModel.user_id == user_id
+        ).count()
+
+    def get_monthly_transactions(self, user_id: int, year: int, month: int) -> int:
+        return self.db.query(TransactionModel).filter(
+            TransactionModel.user_id == user_id,
+            extract('year', TransactionModel.date) == year,
+            extract('month', TransactionModel.date) == month
         ).count()
 
     def get_recent_transactions(self, user_id: int, limit: int = 5) -> List[ExpenseResponse]:
