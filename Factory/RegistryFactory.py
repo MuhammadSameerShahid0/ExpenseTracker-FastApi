@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from Services.AuthService import AuthService
 from Services.ExpenseService import ExpenseService
 from Services.AnalyticsService import AnalyticsService
+from Services.UserService import UserService
 from Services.EmailService import EmailService
 
 
@@ -12,6 +13,7 @@ class ServiceFactory:
         "auth" : AuthService,
         "expense" : ExpenseService,
         "analytics" : AnalyticsService,
+        "user" : UserService,
     }
 
     @staticmethod

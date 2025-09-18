@@ -4,7 +4,6 @@ import { useAuth } from './auth/AuthContext';
 import './Navbar.css';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -42,25 +41,21 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleProfile = () => {
+    navigate('/profile');
+    setIsUserMenuOpen(false);
   };
 
-  const toggleUserMenu = () => {
-  setIsUserMenuOpen(!isUserMenuOpen);
-};
+  const handleAccountSettings = () => {
+    navigate('/account-settings');
+    setIsUserMenuOpen(false);
+  };
 
-const handleAccountSettings = () => {
-  navigate('/account-settings'); // or your account settings page
-  setIsUserMenuOpen(false);
-};
-
-const handleLogoutClick = () => {
-  logout();
-  navigate('/');
-  setIsUserMenuOpen(false);
-};
+  const handleLogoutClick = () => {
+    logout();
+    navigate('/');
+    setIsUserMenuOpen(false);
+  };
 
 
   return (
@@ -92,14 +87,14 @@ const handleLogoutClick = () => {
                 {theme === 'light' ? '🌙' : '☀️'}
               </button>
               
-              <div className="user-logo" onClick={toggleUserMenu} title={user.username} style={{ cursor: 'pointer' }}>
+              <div className="user-logo" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} title={user.username} style={{ cursor: 'pointer' }}>
                 {/* Avatar or initials */}
                 <span role="img" aria-label="User">👤</span>
               </div>
 
               {isUserMenuOpen && (
                 <div className="user-dropdown">
-                  <div className="dropdown-item" onClick={() => alert('Another option')}>
+                  <div className="dropdown-item" onClick={handleProfile}>
                     Profile
                   </div>
                   <div className="dropdown-item" onClick={handleAccountSettings}>

@@ -8,6 +8,8 @@ import Dashboard from './components/Dashboard';
 import AddExpense from './components/AddExpense';
 import ExpensesList from './components/ExpensesList';
 import Reports from './components/Reports';
+import Profile from './components/auth/Profile';
+import AccountSettings from './components/auth/AccountSettings';
 import { AuthProvider } from './components/auth/AuthContext';
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
             <Route path="/add-expense" element={<AddExpense />} />
             <Route path="/expenses-list" element={<ExpensesList />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/account-settings" element={<AccountSettings />} />
           </Routes>
         </div>
       </Router>

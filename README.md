@@ -34,6 +34,13 @@ A comprehensive expense tracking application with secure authentication, expense
 - 📄 PDF report generation with export functionality
 - 📅 Date range filtering for reports
 
+### User Profile & Account Management
+- 👤 Modern user profile page with statistics
+- ⚙️ Account settings for managing personal information
+- 🔧 Security settings with 2FA management
+- 📅 "Member since" information with days calculation
+- 🟢 Online status indicator
+
 ### User Experience
 - 🌙 Dark/light theme toggle
 - 📱 Responsive design for all devices
@@ -55,6 +62,7 @@ A comprehensive expense tracking application with secure authentication, expense
 - **AuthService** - User registration, login, and authentication
 - **ExpenseService** - Expense creation, management, and categorization
 - **AnalyticsService** - Reporting, statistics, and data analysis
+- **UserService** - User profile management
 
 ### Frontend
 - **React 18** - JavaScript library for building user interfaces
@@ -81,22 +89,42 @@ ExpenseTracker/
 │   │   ├── AuthController.py      # Authentication routes
 │   │   ├── ExpenseController.py   # Expense management routes
 │   │   ├── AnalyticsController.py # Analytics and reporting routes
+│   │   ├── UserController.py       # User profile routes
 │   │   └── main.py               # Application entry point
 │   ├── Models/             # Database models
 │   ├── Schema/             # Pydantic data schemas
 │   ├── Services/           # Business logic implementation
 │   │   ├── AuthService.py         # Authentication service
 │   │   ├── ExpenseService.py      # Expense management service
-│   │   └── AnalyticsService.py    # Analytics and reporting service
+│   │   ├── AnalyticsService.py    # Analytics and reporting service
+│   │   └── UserService.py        # User profile service
 │   ├── Interfaces/         # Service interfaces
 │   │   ├── IAuthService.py        # Authentication service interface
 │   │   ├── IExpenseService.py     # Expense management service interface
-│   │   └── IAnalyticsService.py   # Analytics service interface
+│   │   ├── IAnalyticsService.py   # Analytics service interface
+│   │   └── IUserService.py        # User service interface
 │   ├── Factory/            # Service factory patterns
 │   ├── OAuthandJWT/        # Authentication utilities
 │   ├── PasslibPasswordHash/ # Password hashing utilities
 │   ├── TwoFAgoogle/        # Two-factor authentication
 │   └── EmailService/       # Email notification service
+│
+├── Frontend (React)
+│   ├── components/         # React components
+│   │   ├── auth/           # Authentication components
+│   │   │   ├── Profile.jsx        # User profile page
+│   │   │   ├── AccountSettings.jsx # Account settings page
+│   │   │   ├── Login.jsx          # Login page
+│   │   │   ├── Register.jsx        # Registration page
+│   │   │   ├── AuthContext.jsx    # Authentication context
+│   │   │   └── Auth.css           # Authentication styles
+│   │   ├── Dashboard.jsx    # Dashboard with overview
+│   │   ├── AddExpense.jsx   # Expense creation form
+│   │   ├── ExpensesList.jsx # Expense listing with filters
+│   │   ├── Reports.jsx      # Reporting with PDF export
+│   │   ├── Navbar.jsx       # Navigation bar
+│   │   └── HomePage.jsx     # Landing page
+│   └── assets/             # Static assets
 ```
 
 ## Installation
@@ -210,14 +238,20 @@ ExpenseTracker/
 - `GET /api/total_transactions` - Get total transaction count
 - `GET /api/recent_transactions` - Get recent transactions
 
+### User Profile
+- `GET /api/user_details` - Get user profile information
+- `PUT /api/user_profile` - Update user profile information
+
 ## Frontend Components
 
 ### Authentication
 - **Login** - Secure login with 2FA
 - **Register** - User registration with email verification
+- **Profile** - User profile with statistics and account information
+- **AccountSettings** - Account management and security settings
 
 ### Main Application
-- **Navbar** - Navigation with theme toggle
+- **Navbar** - Navigation with theme toggle and user menu
 - **Dashboard** - Overview with statistics and charts
 - **AddExpense** - Form for adding new expenses
 - **ExpensesList** - Detailed expense listing with filters
