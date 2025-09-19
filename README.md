@@ -20,6 +20,7 @@ A comprehensive expense tracking application with secure authentication, expense
 - 📧 Email verification for registration and login
 - 🔒 JWT token-based authentication
 - 🔑 Secure password hashing with Passlib
+- ♻️ Account reactivation for deactivated accounts
 
 ### Expense Management
 - 💰 Add, view, and manage expenses
@@ -40,6 +41,7 @@ A comprehensive expense tracking application with secure authentication, expense
 - 🔧 Security settings with 2FA management
 - 📅 "Member since" information with days calculation
 - 🟢 Online status indicator
+- ♻️ Account reactivation for deactivated accounts
 
 ### User Experience
 - 🌙 Dark/light theme toggle
@@ -224,6 +226,8 @@ ExpenseTracker/
 - `POST /api/register` - User registration with 2FA setup
 - `POST /api/login` - User login with email verification
 - `POST /api/verify-token` - JWT token verification
+- `POST /api/re-active-account` - Request account reactivation code
+- `POST /api/re-active-account-verification-email-code` - Verify reactivation code and reactivate account
 
 ### Expenses
 - `POST /api/expenses` - Add new expense
@@ -245,10 +249,11 @@ ExpenseTracker/
 ## Frontend Components
 
 ### Authentication
-- **Login** - Secure login with 2FA
-- **Register** - User registration with email verification
+- **Login** - Secure login with 2FA and account reactivation option
+- **Register** - User registration with email verification and account reactivation during registration
 - **Profile** - User profile with statistics and account information
 - **AccountSettings** - Account management and security settings
+- **AccountReactivation** - Dedicated page for account reactivation
 
 ### Main Application
 - **Navbar** - Navigation with theme toggle and user menu
@@ -274,6 +279,35 @@ ExpenseTracker/
 - HTTPS-ready implementation
 - Secure headers configuration
 - Input validation and sanitization
+
+## Account Reactivation
+
+The ExpenseTracker application now includes account reactivation functionality for users with deactivated accounts. This feature allows users to restore access to their accounts without needing to create a new one.
+
+### How It Works
+
+1. **Detection**: When a user attempts to log in or register with an email associated with a deactivated account, the system automatically detects this condition.
+
+2. **Reactivation Options**: 
+   - Users can reactivate their account directly from the login page
+   - Users can also reactivate during the registration process if they attempt to register with a deactivated email
+
+3. **Verification Process**:
+   - System sends a verification code to the user's email
+   - User enters the code to verify their identity
+   - Account is reactivated upon successful verification
+
+4. **Post-Reactivation**:
+   - Users can immediately log in with their existing credentials
+   - All previous data and settings are preserved
+   - Account status is updated to active
+
+### Benefits
+
+- **Data Preservation**: Users retain all their previous expense data, categories, and settings
+- **Seamless Experience**: Simple verification process with email code
+- **Security**: Maintains the same security standards as regular authentication
+- **Flexibility**: Available from both login and registration flows
 
 ## License
 
