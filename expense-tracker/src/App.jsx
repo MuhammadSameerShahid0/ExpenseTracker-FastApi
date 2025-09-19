@@ -10,6 +10,7 @@ import ExpensesList from './components/ExpensesList';
 import Reports from './components/Reports';
 import Profile from './components/auth/Profile';
 import AccountSettings from './components/auth/AccountSettings';
+import AccountReactivation from './components/auth/AccountReactivation';
 import { AuthProvider } from './components/auth/AuthContext';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/account-settings" element={<AccountSettings />} />
+            <Route path="/reactivate-account" element={<AccountReactivation />} />
           </Routes>
         </div>
       </Router>

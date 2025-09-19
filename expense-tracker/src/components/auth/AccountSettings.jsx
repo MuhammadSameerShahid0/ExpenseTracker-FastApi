@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
-import './Auth.css';
+import './AccountSettings.css';
 
 const AccountSettings = () => {
   const [user, setUser] = useState(null);
@@ -9,6 +9,12 @@ const AccountSettings = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [showDisable2FAModal, setShowDisable2FAModal] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [secretKey, setSecretKey] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
@@ -24,40 +30,6 @@ const AccountSettings = () => {
     if (!token) {
       navigate('/login');
     } else {
-      const fetchUserProfile = async (token) => {
-        try {
-          const response = await fetch('/api/user_details', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          const data = await response.json();
-
-          if (response.ok) {
-            setUser(data);
-            setFormData({
-              fullname: data.fullname || '',
-              email: data.email || '',
-              currentPassword: '',
-              newPassword: '',
-              confirmNewPassword: ''
-            });
-          } else {
-            localStorage.removeItem('token');
-            navigate('/login');
-          }
-        } catch (error) {
-          setError('Failed to fetch user profile');
-          localStorage.removeItem('token');
-          navigate('/login');
-        } finally {
-          setLoading(false);
-        }
-      };
-      
       fetchUserProfile(token);
     }
   }, [navigate]);
@@ -109,8 +81,7 @@ const AccountSettings = () => {
     setError('');
     setSuccess('');
     
-    // Basic validation
-    if (formData.newPassword !== formData.confirmNewPassword) {
+    if (formData.newPassword && formData.newPassword !== formData.confirmNewPassword) {
       setError('New passwords do not match');
       return;
     }
@@ -119,7 +90,9 @@ const AccountSettings = () => {
       const token = localStorage.getItem('token');
       const updateData = {
         fullname: formData.fullname,
-        email: formData.email
+        email: formData.email,
+        ...(formData.currentPassword && { current_password: formData.currentPassword }),
+        ...(formData.newPassword && { new_password: formData.newPassword })
       };
       
       const response = await fetch('/api/user_profile', {
@@ -134,7 +107,6 @@ const AccountSettings = () => {
       if (response.ok) {
         setSuccess('Profile updated successfully');
         setIsEditing(false);
-        // Refresh user data
         fetchUserProfile(token);
       } else {
         const data = await response.json();
@@ -145,15 +117,136 @@ const AccountSettings = () => {
     }
   };
 
-  const handle2FASetup = () => {
-    // This would integrate with your 2FA system
-    alert('2FA setup would be implemented here');
+  const handleEnable2FA = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/2fa_enable', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setQrCode(data.qr_code_2fa);
+        setSecretKey(data.secret_key_2fa);
+        setShow2FAModal(true);
+        setError('');
+      } else {
+        setError(data.detail || 'Failed to enable 2FA');
+      }
+    } catch (err) {
+      setError('An error occurred while enabling 2FA');
+    }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDisable2FA = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/2fa_disable', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        fetchUserProfile(token);
+        setShowDisable2FAModal(false);
+        setSuccess('2FA has been disabled successfully');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.detail || 'Failed to disable 2FA');
+      }
+    } catch (err) {
+      setError('An error occurred while disabling 2FA');
+    }
+  };
+
+  const handle2FASetup = () => {
+    if (user?.status_2fa) {
+      setShowDisable2FAModal(true);
+    } else {
+      handleEnable2FA();
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError('Please enter a valid 6-digit verification code');
+      return;
+    }
+    
+    setIsVerifying(true);
+    setError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/verify_2fa?code=${verificationCode}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        fetchUserProfile(token);
+        setShow2FAModal(false);
+        setVerificationCode('');
+        setSuccess('2FA has been enabled successfully');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.detail || 'Failed to verify 2FA code');
+      }
+    } catch (err) {
+      setError('An error occurred while verifying 2FA code');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      // Implement account deletion logic
-      alert('Account deletion would be implemented here');
+      try {
+        setLoading(true);
+        setError('');
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/delete-account', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Successfully deleted account
+          // Clear local storage and redirect to home page
+          localStorage.removeItem('token');
+          navigate('/');
+          window.location.reload(); // Reload to reset app state
+        } else {
+          setError(data.detail || 'Failed to delete account');
+        }
+      } catch (err) {
+        setError('An error occurred while deleting your account');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -189,95 +282,267 @@ const AccountSettings = () => {
       <main className="dashboard-main">
         <div className="settings-container">
           <div className="settings-header">
-            <h1>Account Settings</h1>
-            <button 
-              className="btn btn-outline"
-              onClick={() => navigate('/profile')}
-              style={{ marginLeft: '1rem' }}
-            >
-              ← Back to Profile
-            </button>
+            <div className="header-content">
+              <button 
+               className="back-button"
+                onClick={() => navigate('/profile')}
+              >
+                <svg 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    d="M19 12H5M5 12L12 19M5 12L12 5" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="back-text">Back To Profile</span>
+              </button>
+
+              <h1>Account Settings</h1>
+            </div>
+            <div className="header-actions">
+              {isEditing ? (
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </button>
+              ) : (
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit Profile
+                </button>
+              )}
+            </div>
           </div>
           
+          {show2FAModal && (
+            <div className="modal-overlay" onClick={() => setShow2FAModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>Set Up Two-Factor Authentication</h3>
+                  <button 
+                    className="modal-close" 
+                    onClick={() => setShow2FAModal(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="qr-code-section">
+                    <p>Scan this QR code with your authenticator app:</p>
+                    <div className="qr-container">
+                      {qrCode ? (
+                        <img
+                          src={`data:image/png;base64,${qrCode}`}
+                          alt="QR Code"
+                        />
+                      ) : (
+                        <div className="qr-placeholder">
+                          <div className="spinner-small"></div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="qr-note">
+                      Can't scan the code? Use this secret key instead:
+                    </p>
+                    <div className="secret-key-box">
+                      <div className="secret-key">{secretKey}</div>
+                      <button 
+                        className="copy-btn"
+                        onClick={() => {
+                          navigator.clipboard.writeText(secretKey);
+                          setSuccess('Secret key copied to clipboard');
+                          setTimeout(() => setSuccess(''), 2000);
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleVerify2FA} className="verification-form">
+                    <div className="form-group">
+                      <label htmlFor="verificationCode">Enter 6-digit code from your authenticator app:</label>
+                      <input
+                        type="text"
+                        id="verificationCode"
+                        value={verificationCode}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          setVerificationCode(value.slice(0, 6));
+                        }}
+                        maxLength="6"
+                        className="verification-input"
+                        placeholder="000000"
+                        required
+                      />
+                    </div>
+                    <div className="modal-footer">
+                      <button 
+                        type="button" 
+                        className="btn btn-outline" 
+                        onClick={() => setShow2FAModal(false)}
+                        disabled={isVerifying}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="btn btn-primary"
+                        disabled={isVerifying || verificationCode.length !== 6}
+                      >
+                        {isVerifying ? (
+                          <>
+                            <div className="spinner-small white"></div>
+                            Verifying...
+                          </>
+                        ) : 'Verify & Enable'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {showDisable2FAModal && (
+            <div className="modal-overlay" onClick={() => setShowDisable2FAModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>Disable Two-Factor Authentication</h3>
+                  <button 
+                    className="modal-close" 
+                    onClick={() => setShowDisable2FAModal(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="warning-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 9V11M12 15H12.01M5.07183 19H18.9282C20.4678 19 21.4301 17.3333 20.6603 16L13.7321 4C12.9623 2.66667 11.0378 2.66667 10.268 4L3.33978 16C2.56998 17.3333 3.53223 19 5.07183 19Z" stroke="#E11D48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <p>Are you sure you want to disable two-factor authentication? This will reduce the security of your account.</p>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    className="btn btn-outline" 
+                    onClick={() => setShowDisable2FAModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={handleDisable2FA}
+                  >
+                    Disable 2FA
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="settings-content">
-            {/* Profile Information Card */}
+            {error && <div className="alert error">{error}</div>}
+            {success && <div className="alert success">{success}</div>}
+            
             <div className="modern-card">
               <div className="card-header">
                 <h2>Profile Information</h2>
-                <button 
-                  className="btn btn-outline"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  {isEditing ? 'Cancel' : 'Edit Profile'}
-                </button>
+                <div className="card-badge">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M20 21C20 19.1435 19.2625 17.363 17.9497 16.0503C16.637 14.7375 14.8565 14 13 14H11C9.14348 14 7.36301 14.7375 6.05025 16.0503C4.7375 17.363 4 19.1435 4 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Personal Details
+                </div>
               </div>
               
-              {error && <div className="alert error">{error}</div>}
-              {success && <div className="alert success">{success}</div>}
-              
               <form onSubmit={handleUpdateProfile} className="settings-form">
-                <div className="form-group">
-                  <label htmlFor="fullname">Full Name</label>
-                  <input
-                    type="text"
-                    id="fullname"
-                    name="fullname"
-                    value={formData.fullname}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    required
-                  />
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="fullname">Full Name</label>
+                    <input
+                      type="text"
+                      id="fullname"
+                      name="fullname"
+                      value={formData.fullname}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                      required
+                    />
+                  </div>
                 </div>
                 
                 {isEditing && (
                   <>
-                    <div className="form-group">
-                      <label htmlFor="currentPassword">Current Password</label>
-                      <input
-                        type="password"
-                        id="currentPassword"
-                        name="currentPassword"
-                        value={formData.currentPassword}
-                        onChange={handleInputChange}
-                        placeholder="Required to make changes"
-                      />
+                    <div className="form-divider">
+                      <span>Change Password (optional)</span>
                     </div>
                     
-                    <div className="form-group">
-                      <label htmlFor="newPassword">New Password</label>
-                      <input
-                        type="password"
-                        id="newPassword"
-                        name="newPassword"
-                        value={formData.newPassword}
-                        onChange={handleInputChange}
-                        placeholder="Leave blank to keep current password"
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="confirmNewPassword">Confirm New Password</label>
-                      <input
-                        type="password"
-                        id="confirmNewPassword"
-                        name="confirmNewPassword"
-                        value={formData.confirmNewPassword}
-                        onChange={handleInputChange}
-                        placeholder="Leave blank to keep current password"
-                      />
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label htmlFor="currentPassword">Current Password</label>
+                        <input
+                          type="password"
+                          id="currentPassword"
+                          name="currentPassword"
+                          value={formData.currentPassword}
+                          onChange={handleInputChange}
+                          placeholder="Required to make changes"
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor="newPassword">New Password</label>
+                        <input
+                          type="password"
+                          id="newPassword"
+                          name="newPassword"
+                          value={formData.newPassword}
+                          onChange={handleInputChange}
+                          placeholder="Leave blank to keep current password"
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor="confirmNewPassword">Confirm New Password</label>
+                        <input
+                          type="password"
+                          id="confirmNewPassword"
+                          name="confirmNewPassword"
+                          value={formData.confirmNewPassword}
+                          onChange={handleInputChange}
+                          placeholder="Leave blank to keep current password"
+                        />
+                      </div>
                     </div>
                     
                     <div className="form-actions">
@@ -290,30 +555,64 @@ const AccountSettings = () => {
               </form>
             </div>
             
-            {/* Security Settings Card */}
             <div className="modern-card">
               <div className="card-header">
-                <h2>Security</h2>
+                <h2>Security Settings</h2>
+                <div className="card-badge">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Account Protection
+                </div>
               </div>
               
               <div className="security-settings">
                 <div className="security-item">
                   <div className="security-info">
-                    <h3>Two-Factor Authentication</h3>
-                    <p>Add an extra layer of security to your account</p>
+                    <div className="security-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Two-Factor Authentication</h3>
+                      <p>Add an extra layer of security to your account</p>
+                      {user?.status_2fa ? (
+                        <div className="status-badge enabled">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Enabled
+                        </div>
+                      ) : (
+                        <div className="status-badge disabled">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Disabled
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <button 
-                    className="btn btn-outline"
+                    className={`btn ${user?.status_2fa ? 'btn-outline' : 'btn-primary'}`}
                     onClick={handle2FASetup}
                   >
-                    {user?.status_2fa ? 'Manage' : 'Enable'} 2FA
+                    {user?.status_2fa ? 'Manage' : 'Enable 2FA'}
                   </button>
                 </div>
                 
                 <div className="security-item">
                   <div className="security-info">
-                    <h3>Login History</h3>
-                    <p>View your recent login activity</p>
+                    <div className="security-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 15V17M12 7V13M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Login History</h3>
+                      <p>View your recent login activity</p>
+                    </div>
                   </div>
                   <button className="btn btn-outline">
                     View History
@@ -322,17 +621,29 @@ const AccountSettings = () => {
               </div>
             </div>
             
-            {/* Account Management Card */}
             <div className="modern-card">
               <div className="card-header">
                 <h2>Account Management</h2>
+                <div className="card-badge">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15V17M12 7V13M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Data & Privacy
+                </div>
               </div>
               
               <div className="account-actions">
                 <div className="action-item">
                   <div className="action-info">
-                    <h3>Export Data</h3>
-                    <p>Download a copy of your expense data</p>
+                    <div className="action-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 16V20H20V16M12 4V16M12 4L8 8M12 4L16 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Export Data</h3>
+                      <p>Download a copy of your expense data</p>
+                    </div>
                   </div>
                   <button className="btn btn-outline">
                     Export
@@ -341,8 +652,15 @@ const AccountSettings = () => {
                 
                 <div className="action-item danger">
                   <div className="action-info">
-                    <h3>Delete Account</h3>
-                    <p>Permanently delete your account and all data</p>
+                    <div className="action-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 5L5 19M5 5L19 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3>Delete Account</h3>
+                      <p>Permanently delete your account and all data</p>
+                    </div>
                   </div>
                   <button 
                     className="btn btn-danger"

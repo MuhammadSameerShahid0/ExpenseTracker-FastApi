@@ -16,6 +16,9 @@ def get_auth_service(db: Session = Depends(get_db)) -> IAuthService:
 
 Auth_Db_DI = Depends(get_auth_service)
 
+def get_current_user(payload: dict = Depends(verify_jwt)):
+    return payload
+
 @AuthRouter.post("/register")
 def register(request_session: Request,
              request: AuthSchema.UserCreate,
@@ -62,3 +65,19 @@ def login_verification_code_and_otp(request_session: Request,
 @AuthRouter.post("/verify-token")
 def verify_token(payload: dict = Depends(verify_jwt)):
     return {"user": payload}
+
+@AuthRouter.delete("/delete-account")
+def delete_account(services : IAuthService = Auth_Db_DI,
+                   current_user: dict = Depends(get_current_user)):
+    return services.delete_account(current_user["id"])
+
+@AuthRouter.post("/re-active-account")
+def reactive_account( request_session: Request, email : str, services : IAuthService = Auth_Db_DI):
+    return services.re_active_account(email, request_session)
+
+@AuthRouter.post("/re-active-account-verification-email-code")
+def reactive_account_verification_email_code(code : int,
+                                             request_session: Request,
+                                             services : IAuthService = Auth_Db_DI
+                                             ):
+    return services.re_active_account_verification_email_code(code, request_session)

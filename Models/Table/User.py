@@ -11,12 +11,14 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
-    fullname = Column(String(50), nullable=False)  # Removed unique constraint from fullname
+    fullname = Column(String(50), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.now)
     status_2fa = Column(Boolean, default=False)
-    secret_2fa = Column(String(255), unique=True, index=True, nullable=True)  # Made nullable
+    secret_2fa = Column(String(255), unique=True, index=True, nullable=True)
+    is_active = Column(Boolean, default=True)
+    in_active_date = Column(DateTime, default=datetime.now)
 
     # Relationships
     categories = relationship("Category", back_populates="user")

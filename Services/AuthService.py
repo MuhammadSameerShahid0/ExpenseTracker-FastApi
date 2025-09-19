@@ -6,6 +6,9 @@ from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette import status
 from Models.Table.User import User as UserModel
+from Models.Table.Category import Category as CategoryModel
+from Models.Table.Transaction import Transaction as TransactionModel
+from Models.Table.Budget import Budget as BudgetModel
 from Interfaces.IAuthService import IAuthService
 from OAuthandJWT.JWTToken import create_jwt
 from PasslibPasswordHash.hashpassword import hash_password, verify_password_and_hash
@@ -28,6 +31,8 @@ class AuthService(IAuthService):
             email_exists = self.db.query(UserModel).filter(UserModel.email == request.email).first()
             if email_exists:
                     errors.append(f"Email '{request.email}' already exists")
+            if email_exists.is_active is False:
+                    errors.append("Account not active, re-active if you want")
             username_exists = self.db.query(UserModel).filter(UserModel.username == request.username).first()
             if username_exists:
                     errors.append(f"Username '{request.username}' already exists")
@@ -122,6 +127,9 @@ class AuthService(IAuthService):
                 verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
                 if not verify_password:
                     errors.append("Entered password not correct")
+
+            if user_exists.is_active is False:
+                errors.append("Account not active, re-active if you want")
 
             errors_len = len(errors)
             if errors_len > 0:
@@ -281,3 +289,114 @@ class AuthService(IAuthService):
             )
 
         #endregion Verify code and otp
+
+    def delete_account(self, user_id: int):
+        try:
+            user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+
+            user.is_active = False
+            user.in_active_date = datetime.now()
+            self.db.commit()
+            self.db.refresh(user)
+
+            return "Account Deleted Successfully"
+        except Exception as ex:
+            self.db.rollback()
+            code = getattr(ex, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    def re_active_account(self, email : str, request_session: Request):
+        try:
+            user = self.db.query(UserModel).filter(UserModel.email == email).first()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+
+            if user.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="User already active"
+                )
+
+            code = self.email_service.email_code()
+
+            subject = f"(ExpenseTracker) Re-active account verification code {code}"
+            body = self.email_service.re_active_account_template(code, user.fullname)
+            self.email_service.send_email(
+                user.email,
+                subject,
+                body
+            )
+
+            request_session.session["Email code"] = code
+            request_session.session["User Name"] = user.username
+            request_session.session["id"] = user.id
+
+            return f"Account activation code send to the '{user.email}' email address"
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    def re_active_account_verification_email_code(self, code: int, request_session: Request):
+        try:
+            errors = []
+
+            session_email_code = request_session.session.get("Email code")
+            session_login_name = request_session.session.get("User Name")
+            session_login_id = request_session.session.get("id")
+
+            if str(session_email_code).strip() != str(code).strip():
+                errors.append("Invalid Email Code")
+
+            errors_len = len(errors)
+            if errors_len > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=str.join(" ! ", errors)
+                )
+
+            user = self.db.query(UserModel).filter(UserModel.id == session_login_id).first()
+
+            user.is_active = True
+            self.db.commit()
+            self.db.refresh(user)
+
+            token = create_jwt({
+                "id": session_login_id,
+                "email": session_email_code,
+                "username": session_login_name,
+                "from_project": "ExpenseTracker"
+            })
+
+            return Token(
+                access_token=token,
+                token_type="Bearer"
+            )
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )

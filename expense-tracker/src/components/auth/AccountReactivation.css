@@ -1,0 +1,20 @@
+/* Additional styles for Account Reactivation component */
+.reactivation-info {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--gray-100);
+  border-radius: var(--border-radius-sm);
+}
+
+.reactivation-info p {
+  margin: 0;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.alert-success {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}

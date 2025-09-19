@@ -36,7 +36,8 @@ class TwoFaService(ITwoFaService):
 
             response = User2FAResponse(
                 msg="ThankYou for enabled 2FA, Scan the qr_code from any authenticator",
-                qr_code_2fa=qr_code
+                qr_code_2fa=qr_code,
+                secret_key_2fa=secret
             )
 
             return response

@@ -22,3 +22,15 @@ class IAuthService(ABC):
     @abstractmethod
     def login_verify_code_and_otp(self, code: int, otp: str, request_session: Request) -> Token:
         pass
+
+    @abstractmethod
+    def delete_account(self, user_id:int) -> str:
+        pass
+
+    @abstractmethod
+    def re_active_account(self, email: str, request_session: Request) -> str:
+        pass
+
+    @abstractmethod
+    def re_active_account_verification_email_code(self, code: int, request_session: Request) -> Token:
+        pass

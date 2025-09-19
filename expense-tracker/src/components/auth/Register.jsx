@@ -25,6 +25,7 @@ const Register = () => {
   const [secretKey, setSecretKey] = useState("");
   const [showSecretKey, setShowSecretKey] = useState(false);
   const [showSecurityInfo, setShowSecurityInfo] = useState(false); // For security info modal
+  const [reactivationCode, setReactivationCode] = useState(""); // For account reactivation
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -89,7 +90,15 @@ const Register = () => {
           setStep(2);
         }
       } else {
-        setError(data.detail || "❌ Registration failed");
+        // Check if the error is related to an inactive account that can be reactivated
+        if (data.detail && data.detail.includes("Account not active")) {
+          // Show reactivation option
+          setError(`This email belongs to a deactivated account. Would you like to reactivate it?`);
+          // We'll add a state to track if we should show the reactivation UI
+          setStep(4); // New step for reactivation
+        } else {
+          setError(data.detail || "❌ Registration failed");
+        }
       }
     } catch (err) {
       setError("⚠ An error occurred. Please try again.");
@@ -127,6 +136,61 @@ const Register = () => {
   };
 
   const handleFinish = () => navigate("/dashboard");
+
+  // Handle reactivation request
+  const handleReactivationRequest = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/re-active-account?email=${encodeURIComponent(formData.email)}`, {
+        method: "POST"
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setError("Reactivation code sent to your email. Please check your inbox.");
+      } else {
+        setError(data.detail || "Failed to request account reactivation");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle reactivation submission
+  const handleReactivationSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/re-active-account-verification-email-code?code=${reactivationCode}`, {
+        method: "POST"
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Account successfully reactivated, now we need to login the user
+        // We'll redirect to login page with a success message
+        navigate("/login", { 
+          state: { 
+            message: "Account successfully reactivated! Please log in with your existing credentials." 
+          } 
+        });
+      } else {
+        setError(data.detail || "Failed to reactivate account");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Toggle security info visibility
   const toggleSecurityInfo = () => {
@@ -483,6 +547,72 @@ const Register = () => {
             <button onClick={handleFinish} className="btn btn-primary btn-block">
               Go to Dashboard
             </button>
+          </div>
+        )}
+
+        {/* Step 4 - Account Reactivation */}
+        {step === 4 && (
+          <div className="auth-form-container">
+            <form onSubmit={handleReactivationSubmit} className="auth-form">
+              <div className="reactivation-info">
+                <div className="verification-icon">🔒</div>
+                <p>
+                  This email belongs to a deactivated account. To reactivate it, we'll send a verification code to your email.
+                </p>
+              </div>
+
+              <div className="form-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-block"
+                onClick={handleReactivationRequest}
+                disabled={isLoading}
+              >
+                {isLoading ? "Sending Code..." : "Send Reactivation Code"}
+              </button>
+
+              <div className="form-group">
+                <label>Verification Code</label>
+                <input
+                  type="text"
+                  value={reactivationCode}
+                  onChange={(e) => setReactivationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  required
+                  maxLength="6"
+                  disabled={isLoading}
+                  placeholder="Enter 6-digit code"
+                  className="code-input"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn btn-primary btn-block"
+                disabled={isLoading || reactivationCode.length !== 6}
+              >
+                {isLoading ? <div className="spinner"></div> : "Reactivate Account"}
+              </button>
+
+              <div className="auth-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-link"
+                  onClick={() => setStep(1)}
+                  disabled={isLoading}
+                >
+                  Back to Registration
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>
