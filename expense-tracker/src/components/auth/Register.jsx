@@ -11,6 +11,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    status_2fa: false, // Add 2FA status field
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,12 +24,17 @@ const Register = () => {
   const [showQrModal, setShowQrModal] = useState(false);
   const [secretKey, setSecretKey] = useState("");
   const [showSecretKey, setShowSecretKey] = useState(false);
+  const [showSecurityInfo, setShowSecurityInfo] = useState(false); // For security info modal
 
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ 
+      ...formData, 
+      [name]: type === "checkbox" ? checked : value 
+    });
     setError("");
   };
 
@@ -66,12 +72,22 @@ const Register = () => {
 
       const data = await response.json();
       if (response.ok) {
-        if (data.qr_code_2fa) {
-          setQrCode(data.qr_code_2fa);
-          setSecretKey(data.secret_key_2fa);
-          setShowQrModal(true); // Show modal with QR code
+        // Check if we received a token directly (2FA disabled) or need verification (2FA enabled)
+        if (data.access_token) {
+          // 2FA is disabled, user is registered and logged in directly
+          login(
+            { email: data.email, username: data.username, fullname: data.fullname },
+            data.access_token
+          );
+          navigate("/dashboard"); // Redirect to dashboard directly
+        } else {
+          // 2FA is enabled, show verification step
+          if (data.qr_code_2fa) {
+            setQrCode(data.qr_code_2fa);
+            setSecretKey(data.secret_key_2fa);
+          }
+          setStep(2);
         }
-        setStep(2);
       } else {
         setError(data.detail || "❌ Registration failed");
       }
@@ -112,13 +128,75 @@ const Register = () => {
 
   const handleFinish = () => navigate("/dashboard");
 
+  // Toggle security info visibility
+  const toggleSecurityInfo = () => {
+    setShowSecurityInfo(!showSecurityInfo);
+  };
+
   return (
     <div className="auth-container">
       <Navbar />
+      
+      {/* Security Info Modal */}
+      {showSecurityInfo && (
+        <div className="modal-overlay" onClick={() => setShowSecurityInfo(false)}>
+          <div className="modal-content security-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🔒 Account Security</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowSecurityInfo(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="security-info-content">
+                <div className="security-feature">
+                  <div className="security-icon">🛡️</div>
+                  <h4>Two-Factor Authentication (2FA)</h4>
+                  <p>Adds an extra layer of security by requiring a code from your phone in addition to your password.</p>
+                </div>
+                
+                <div className="security-feature">
+                  <div className="security-icon">📱</div>
+                  <h4>Authenticator Apps</h4>
+                  <p>Use apps like Google Authenticator, Authy, or Microsoft Authenticator to generate time-based codes.</p>
+                </div>
+                
+                <div className="security-feature">
+                  <div className="security-icon">📧</div>
+                  <h4>Email Verification</h4>
+                  <p>Receive verification codes via email during login to confirm it's really you.</p>
+                </div>
+                
+                <div className="security-tip">
+                  <h4>💡 Security Tips</h4>
+                  <ul>
+                    <li>Always enable 2FA for better protection</li>
+                    <li>Use a strong, unique password</li>
+                    <li>Save backup codes in a safe place</li>
+                    <li>Never share your account credentials</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn btn-primary" 
+                onClick={() => setShowSecurityInfo(false)}
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* QR Code Modal */}
       {showQrModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setShowQrModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Set Up Two-Factor Authentication</h3>
               <button 
@@ -298,6 +376,29 @@ const Register = () => {
               />
             </div>
 
+            {/* Security Options */}
+            <div className="security-inline">
+            <label className="security-toggle-inline">
+              <input
+                type="checkbox"
+                id="status_2fa"
+                name="status_2fa"
+                checked={formData.status_2fa}
+                onChange={handleChange}
+              />
+              <span className="security-icon-inline">🔒</span>
+              Enable Security
+            </label>
+            <button 
+              type="button" 
+              className="security-info-inline"
+              onClick={toggleSecurityInfo}
+              title="Learn more about account security"
+            >
+              ⓘ
+            </button>
+            </div>
+            <br />
             <button type="submit" className="btn btn-primary btn-block" disabled={isLoading}>
               {isLoading ? <div className="spinner"></div> : "Create Account"}
             </button>

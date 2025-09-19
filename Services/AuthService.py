@@ -26,12 +26,11 @@ class AuthService(IAuthService):
             errors = []
 
             email_exists = self.db.query(UserModel).filter(UserModel.email == request.email).first()
-
-            if UserModel.username == request.username:
-                errors.append(f"Username '{request.username}' already exists")
-            if UserModel.email == request.email:
-                errors.append(f"Email '{request.email}' already exists")
-
+            if email_exists:
+                    errors.append(f"Email '{request.email}' already exists")
+            username_exists = self.db.query(UserModel).filter(UserModel.username == request.username).first()
+            if username_exists:
+                    errors.append(f"Username '{request.username}' already exists")
 
             errors_len = len(errors)
             if errors_len > 0:
@@ -41,34 +40,64 @@ class AuthService(IAuthService):
                 )
 
             hashed_password = hash_password(request.password)
-            secret, otp_uri = generate_2fa_secret(request.email)
-            qr_code = generate_qrcode(otp_uri)
 
-            code = self.email_service.email_code()
+            if request.status_2fa:
+                secret, otp_uri = generate_2fa_secret(request.email)
+                qr_code = generate_qrcode(otp_uri)
 
-            subject = f"(ExpenseTracker) Registration code {code}"
-            body = self.email_service.register_template(code, request.fullname)
-            self.email_service.send_email(
-                request.email,
-                subject,
-                body
-            )
+                code = self.email_service.email_code()
 
-            request_session.session["Email code"] = code
-            request_session.session["2FA QrCode"] = qr_code
-            request_session.session["2FA Secret"] = secret
+                subject = f"(ExpenseTracker) Registration code {code}"
+                body = self.email_service.register_template(code, request.fullname)
+                self.email_service.send_email(
+                    request.email,
+                    subject,
+                    body
+                )
 
-            request_session.session["User Model"] = {
-                "username": request.username,
-                "fullname": request.fullname,
-                "email": request.email,
-                "password_hash": hashed_password,
-                "secret_2fa": secret,
-                "status_2fa": True
-            }
+                request_session.session["Email code"] = code
+                request_session.session["2FA QrCode"] = qr_code
+                request_session.session["2FA Secret"] = secret
 
-            return f"Verification code sent to email {request.email}"
+                request_session.session["User Model"] = {
+                    "username": request.username,
+                    "fullname": request.fullname,
+                    "email": request.email,
+                    "password_hash": hashed_password,
+                    "secret_2fa": secret,
+                    "status_2fa": True
+                }
 
+                return f"Verification code sent to email {request.email}"
+            else:
+                register_user = UserModel(
+                    username=request.username,
+                    fullname=request.fullname,
+                    email=request.email,
+                    password_hash=hashed_password,
+                    secret_2fa=None,
+                    status_2fa=request.status_2fa
+                )
+                self.db.add(register_user)
+                self.db.commit()
+                self.db.refresh(register_user)
+
+                token = create_jwt({
+                    "id": register_user.id,
+                    "email": register_user.email,
+                    "username": register_user.username,
+                    "from_project": "ExpenseTracker"
+                })
+
+                user_response = UserRegisterResponse(
+                    username=register_user.username,
+                    fullname=register_user.fullname,
+                    email=register_user.email,
+                    status_2fa=register_user.status_2fa,
+                    access_token=token,
+                    qr_code_2fa=""
+                )
+                return user_response
         except Exception as ex:
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
@@ -101,23 +130,38 @@ class AuthService(IAuthService):
                     detail=str.join(" ! ", errors)
                 )
 
-            code = self.email_service.email_code()
+            # If 2FA is enabled, proceed with 2FA verification process
+            if user_exists.status_2fa is True:
+                code = self.email_service.email_code()
 
-            subject = f"(ExpenseTracker) Login code {code}"
-            body = self.email_service.login_template(code, user_exists.fullname)
-            self.email_service.send_email(
-                request.email,
-                subject,
-                body
-            )
+                subject = f"(ExpenseTracker) Login code {code}"
+                body = self.email_service.login_template(code, user_exists.fullname)
+                self.email_service.send_email(
+                    request.email,
+                    subject,
+                    body
+                )
+                request_session.session["Email code"] = code
+                request_session.session["2FA Secret"] = user_exists.secret_2fa
+                request_session.session["Email"] = user_exists.email
+                request_session.session["User Name"] = user_exists.username
+                request_session.session["id"] = user_exists.id
 
-            request_session.session["Email code"] = code
-            request_session.session["2FA Secret"] = user_exists.secret_2fa
-            request_session.session["Email"] = user_exists.email
-            request_session.session["User Name"] = user_exists.username
-            request_session.session["id"] = user_exists.id
+                return "Login successful, Enter the email code and Authenticator OTP"
 
-            return "Login successful, Enter the email code and Authenticator OTP"
+            # If 2FA is disabled, create JWT token directly and return it
+            else:
+                token = create_jwt({
+                    "id": user_exists.id,
+                    "email": user_exists.email,
+                    "username": user_exists.username,
+                    "from_project": "ExpenseTracker"
+                })
+
+                return Token(
+                    access_token=token,
+                    token_type="Bearer"
+                )
 
         except Exception as ex:
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)

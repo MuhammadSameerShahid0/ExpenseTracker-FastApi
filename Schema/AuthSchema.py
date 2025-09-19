@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     fullname: str
     email: str
     password: str
+    status_2fa: bool
 
 class UserRegisterResponse(BaseModel):
     username: str

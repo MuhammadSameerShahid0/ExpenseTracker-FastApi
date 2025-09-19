@@ -5,6 +5,7 @@ from Interfaces.IAuthService import IAuthService
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
 from Schema import AuthSchema
+from Schema.AuthSchema import Token, UserRegisterResponse
 
 app = FastAPI()
 AuthRouter = APIRouter(tags=["Auth"])
@@ -22,6 +23,10 @@ def register(request_session: Request,
              ):
     try:
         result = services.register_user(request, request_session)
+        # If result is a UserRegisterResponse object, return it directly
+        if isinstance(result, UserRegisterResponse):
+            return result
+        # Otherwise, return as a message with QR code data
         qr_code = request_session.session.get("2FA QrCode", "")
         secret_key = request_session.session.get("2FA Secret")
         return {"message": result, "qr_code_2fa": qr_code, "secret_key_2fa": secret_key}
@@ -33,7 +38,12 @@ def login(request_session: Request,
              request: AuthSchema.LoginRequest,
              services : IAuthService = Auth_Db_DI
              ):
-    return services.login(request, request_session)
+    result = services.login(request, request_session)
+    # If result is a Token object, return it directly
+    if isinstance(result, Token):
+        return result
+    # Otherwise, return as a message string
+    return result
 
 @AuthRouter.get("/RegistrationVerificationEmailCodeAnd2FAOtp")
 def verification_code_and_otp(request_session: Request,

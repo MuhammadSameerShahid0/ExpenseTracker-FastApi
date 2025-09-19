@@ -53,7 +53,15 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setStep(2); // Move to verification step
+        // Check if we received a token directly (2FA disabled) or a message (2FA enabled)
+        if (data.access_token) {
+          // 2FA is disabled, we received a token directly
+          login({ email: formData.email, username: data.username }, data.access_token);
+          navigate('/dashboard'); // Redirect to dashboard
+        } else {
+          // 2FA is enabled, move to verification step
+          setStep(2); // Move to verification step
+        }
       } else {
         setError(data.detail || 'Login failed');
       }
@@ -78,8 +86,14 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Extract user info from session or use email from login form
+        const user = {
+          email: formData.email,
+          username: data.username || 'User'
+        };
+        
         // Use the auth context to set the user and token
-        login({ email: data.email, username: data.username }, data.access_token);
+        login(user, data.access_token);
         navigate('/dashboard'); // Redirect to dashboard
       } else {
         setError(data.detail || 'Verification failed');
