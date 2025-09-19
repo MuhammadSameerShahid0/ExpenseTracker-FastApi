@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from Factory.Interface.IAbstractFactory import IAbstractFactory
 from Factory.RegistryFactory import ServiceFactory
+from Interfaces.ITwoFaService import ITwoFaService
 from Interfaces.IAuthService import IAuthService
 from Interfaces.IExpenseService import IExpenseService
 from Interfaces.IAnalyticsService import IAnalyticsService
@@ -20,3 +21,6 @@ class MySqlServiceFactory(IAbstractFactory):
 
     def user_service(self, db: Session) -> IUserService:
         return ServiceFactory.get_services("user", db)
+
+    def twofa_service(self, db: Session) -> ITwoFaService:
+        return ServiceFactory.get_services("twofa", db)
