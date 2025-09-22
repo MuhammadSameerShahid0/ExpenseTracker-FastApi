@@ -1,16 +1,10 @@
 from datetime import datetime
-from enum import verify
-
 import pyotp
 from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette import status
-
-from Logging.FileAndDbLogging import file_and_db_logging
+from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
 from Models.Table.User import User as UserModel
-from Models.Table.Category import Category as CategoryModel
-from Models.Table.Transaction import Transaction as TransactionModel
-from Models.Table.Budget import Budget as BudgetModel
 from Interfaces.IAuthService import IAuthService
 from OAuthandJWT.JWTToken import create_jwt
 from PasslibPasswordHash.hashpassword import hash_password, verify_password_and_hash
@@ -19,13 +13,13 @@ from Schema.AuthSchema import UserRegisterResponse, Token, ChangePassword
 from Services.EmailService import EmailService
 from TwoFAgoogle.SecretandQRCode import generate_2fa_secret, generate_qrcode
 
-
 class AuthService(IAuthService):
     def __init__(self, db: Session, email_service: EmailService):
         self.db = db
         self.email_service = email_service
+        self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
-    # region register
+        # region register
     def register_user(self, request: AuthSchema.UserCreate, request_session: Request):
         try:
             errors = []
@@ -62,6 +56,15 @@ class AuthService(IAuthService):
                     body
                 )
 
+                logger_message = f"verification code {code} sent to email"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.Register",
+                    exception="NULL",
+                    user_id=int(request.email)
+                )
+
                 request_session.session["Email code"] = code
                 request_session.session["2FA QrCode"] = qr_code
                 request_session.session["2FA Secret"] = secret
@@ -74,6 +77,15 @@ class AuthService(IAuthService):
                     "secret_2fa": secret,
                     "status_2fa": True
                 }
+
+                logger_message = f"Security Enabled '{request.email}', Added in db after verification"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.Register",
+                    exception="NULL",
+                    user_id= int(request.email)
+                )
 
                 return f"Verification code sent to email {request.email}"
             else:
@@ -104,11 +116,29 @@ class AuthService(IAuthService):
                     access_token=token,
                     qr_code_2fa=""
                 )
+
+                logger_message = f"Account Registered Successfully '{request.email}' Security Disabled"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.Register",
+                    exception="NULL",
+                    user_id=int(request.email)
+                )
                 return user_response
         except Exception as ex:
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
+
+            logger_message = "Something Went Wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.Register",
+                exception=str(ex),
+                user_id=int(request.email)
+            )
 
             raise HTTPException(
                 status_code=code,
@@ -131,6 +161,15 @@ class AuthService(IAuthService):
                     errors.append("Entered password not correct")
 
             if user_exists.is_active is False:
+                logger_message = "Credentials verified, But account not active"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.Login",
+                    exception="NULL",
+                    user_id=user_exists.id
+                )
+
                 errors.append("Account not active, re-active if you want")
 
             errors_len = len(errors)
@@ -157,6 +196,15 @@ class AuthService(IAuthService):
                 request_session.session["User Name"] = user_exists.username
                 request_session.session["id"] = user_exists.id
 
+                logger_message = "Credentials verified, Email code and authenticator otp required"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source= "AuthService.Login",
+                    exception= "NULL",
+                    user_id=user_exists.id
+                )
+
                 return "Login successful, Enter the email code and Authenticator OTP"
 
             # If 2FA is disabled, create JWT token directly and return it
@@ -168,6 +216,15 @@ class AuthService(IAuthService):
                     "from_project": "ExpenseTracker"
                 })
 
+                logger_message = "Login Successful. Token created"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel = "INFO",
+                    message=logger_message,
+                    event_source="AuthService.Login",
+                    exception="NULL",
+                    user_id=user_exists.id
+                )
+
                 return Token(
                     access_token=token,
                     token_type="Bearer"
@@ -177,6 +234,15 @@ class AuthService(IAuthService):
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
+
+            logger_message = "Something Went Wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.Login",
+                exception=str(ex),
+                user_id=int(request.email)
+            )
 
             raise HTTPException(
                 status_code=code,
@@ -195,12 +261,29 @@ class AuthService(IAuthService):
 
             verif_top = pyotp.TOTP(session_secret_2fa)
             if not verif_top.verify(otp):
+                logger_message = "Enter authenticator OTP invalid"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.RegisterCodeAndOTP",
+                    exception="NULL",
+                    user_id=None
+                )
+
                 errors.append("Invalid OTP code")
 
             if session_email_code is None:
                 errors.append("Session Expired code not found")
 
             if str(session_email_code).strip() != str(code).strip():
+                logger_message = "Entered Email Code is invalid"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.RegisterCodeAndOTP",
+                    exception="NULL",
+                    user_id=None
+                )
                 errors.append("Invalid Email Code")
 
             errors_len = len(errors)
@@ -230,10 +313,30 @@ class AuthService(IAuthService):
                 access_token=token,
                 qr_code_2fa=qr_code
             )
+
+            logger_message = f"'{register_user.email}' Account Created Successfully"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.RegisterCodeAndOTP",
+                exception="NULL",
+                user_id=register_user.id
+            )
+
             return user_response
 
         except Exception as ex:
             self.db.rollback()
+
+            logger_message = "Something Went Wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.RegisterCodeAndOTP",
+                exception=str(ex),
+                user_id=user_record_session["id"]
+            )
+
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
@@ -255,9 +358,25 @@ class AuthService(IAuthService):
 
             verif_top = pyotp.TOTP(session_secret_2fa)
             if not verif_top.verify(otp):
+                logger_message = "Entered authenticator Code is invalid"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.LoginCodeAndOTP",
+                    exception="NULL",
+                    user_id=session_login_id
+                )
                 errors.append("Invalid OTP code")
 
             if str(session_email_code).strip() != str(code).strip():
+                logger_message = "Entered Email Code is invalid"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.LoginCodeAndOTP",
+                    exception="NULL",
+                    user_id=session_login_id
+                )
                 errors.append("Invalid Email Code")
 
             errors_len = len(errors)
@@ -274,6 +393,14 @@ class AuthService(IAuthService):
                 "from_project": "ExpenseTracker"
             })
 
+            logger_message = "Security Code's verified, Login Successful"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.LoginCodeAndOTP",
+                exception="NULL",
+                user_id=session_login_id
+            )
             return Token(
                 access_token= token,
                 token_type= "Bearer"
@@ -284,6 +411,15 @@ class AuthService(IAuthService):
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
+
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.LoginCodeAndOTP",
+                exception=str(ex),
+                user_id=None
+            )
 
             raise HTTPException(
                 status_code=code,
@@ -308,12 +444,30 @@ class AuthService(IAuthService):
             self.db.commit()
             self.db.refresh(user)
 
+            logger_message = "Account Deleted Successfully"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.DeleteAccount",
+                exception="NULL",
+                user_id=user_id
+            )
+
             return "Account Deleted Successfully"
         except Exception as ex:
             self.db.rollback()
             code = getattr(ex, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
+
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.DeleteAccount",
+                exception=str(ex),
+                user_id=user_id
+            )
 
             raise HTTPException(
                 status_code=code,
@@ -344,17 +498,41 @@ class AuthService(IAuthService):
                 subject,
                 body
             )
+            logger_message = f"Re-active code '{code}' sent to Email"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccount",
+                exception="NULL",
+                user_id=user.id
+            )
 
             request_session.session["Email code"] = code
             request_session.session["User Name"] = user.username
             request_session.session["id"] = user.id
 
+            logger_message = "Re-active Account request received and code sent to Email"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccount",
+                exception="NULL",
+                user_id=user.id
+            )
             return f"Account activation code send to the '{user.email}' email address"
         except Exception as ex:
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
 
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccount",
+                exception="NULL",
+                user_id=None
+            )
             raise HTTPException(
                 status_code=code,
                 detail=str(ex)
@@ -369,6 +547,14 @@ class AuthService(IAuthService):
             session_login_id = request_session.session.get("id")
 
             if str(session_email_code).strip() != str(code).strip():
+                logger_message = f"Entered code '{code}' is invalid"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.ReActiveAccountVerificationCode",
+                    exception="NULL",
+                    user_id=session_login_id
+                )
                 errors.append("Invalid Email Code")
 
             errors_len = len(errors)
@@ -391,6 +577,15 @@ class AuthService(IAuthService):
                 "from_project": "ExpenseTracker"
             })
 
+            logger_message = f"Re-active code '{code}' successful, Account activated"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccountVerificationCode",
+                exception="NULL",
+                user_id=user.id
+            )
+
             return Token(
                 access_token=token,
                 token_type="Bearer"
@@ -400,6 +595,14 @@ class AuthService(IAuthService):
             if isinstance(ex, HTTPException):
                 raise ex
 
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccountVerificationCode",
+                exception=str(ex),
+                user_id=None
+            )
             raise HTTPException(
                 status_code=code,
                 detail=str(ex)
@@ -423,6 +626,14 @@ class AuthService(IAuthService):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Current password is incorrect"
                 )
+            logger_message = f"Entered '{user.email}' current password is not correct"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ChangePassword",
+                exception="NULL",
+                user_id=user.id
+            )
 
             new_password = hash_password(request.new_password)
 
@@ -432,6 +643,14 @@ class AuthService(IAuthService):
             self.db.commit()
             self.db.refresh(user)
 
+            logger_message = f"Entered '{user.email}' password changed successfully"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ChangePassword",
+                exception="NULL",
+                user_id=user.id
+            )
             return f"'{user.fullname}' Your password changed successfully"
         except Exception as ex:
             self.db.rollback()
@@ -439,6 +658,14 @@ class AuthService(IAuthService):
             if isinstance(ex, HTTPException):
                 raise ex
 
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.ChangePassword",
+                exception=str(ex),
+                user_id=None
+            )
             raise HTTPException(
                 status_code=code,
                 detail=str(ex)
