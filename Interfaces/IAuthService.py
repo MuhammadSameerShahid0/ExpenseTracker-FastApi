@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from fastapi import Request
 from Schema import AuthSchema
-from Schema.AuthSchema import UserRegisterResponse, LoginRequest, Token
+from Schema.AuthSchema import UserRegisterResponse, LoginRequest, Token, ChangePassword
 from typing import Union
 
 
@@ -33,4 +33,8 @@ class IAuthService(ABC):
 
     @abstractmethod
     def re_active_account_verification_email_code(self, code: int, request_session: Request) -> Token:
+        pass
+
+    @abstractmethod
+    def change_password(self, request: ChangePassword) -> str:
         pass

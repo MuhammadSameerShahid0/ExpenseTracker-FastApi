@@ -5,7 +5,7 @@ from Interfaces.IAuthService import IAuthService
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
 from Schema import AuthSchema
-from Schema.AuthSchema import Token, UserRegisterResponse
+from Schema.AuthSchema import Token, UserRegisterResponse, ChangePassword
 
 app = FastAPI()
 AuthRouter = APIRouter(tags=["Auth"])
@@ -81,3 +81,7 @@ def reactive_account_verification_email_code(code : int,
                                              services : IAuthService = Auth_Db_DI
                                              ):
     return services.re_active_account_verification_email_code(code, request_session)
+
+@AuthRouter.post("/change-password")
+def change_password(request: ChangePassword, services : IAuthService = Auth_Db_DI):
+    return services.change_password(request)

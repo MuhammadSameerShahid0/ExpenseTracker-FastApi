@@ -95,8 +95,8 @@ const AccountSettings = () => {
         ...(formData.newPassword && { new_password: formData.newPassword })
       };
       
-      const response = await fetch('/api/user_profile', {
-        method: 'PUT',
+      const response = await fetch('/api/change-password', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -497,6 +497,7 @@ const AccountSettings = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       required
+                      readOnly
                     />
                   </div>
                 </div>

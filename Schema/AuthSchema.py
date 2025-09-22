@@ -22,3 +22,9 @@ class UserRegisterResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class ChangePassword(BaseModel):
+    fullname: str
+    email: str
+    current_password: str
+    new_password: str

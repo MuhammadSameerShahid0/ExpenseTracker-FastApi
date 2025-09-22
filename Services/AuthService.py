@@ -5,6 +5,8 @@ import pyotp
 from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette import status
+
+from Logging.FileAndDbLogging import file_and_db_logging
 from Models.Table.User import User as UserModel
 from Models.Table.Category import Category as CategoryModel
 from Models.Table.Transaction import Transaction as TransactionModel
@@ -13,7 +15,7 @@ from Interfaces.IAuthService import IAuthService
 from OAuthandJWT.JWTToken import create_jwt
 from PasslibPasswordHash.hashpassword import hash_password, verify_password_and_hash
 from Schema import AuthSchema
-from Schema.AuthSchema import UserRegisterResponse, Token
+from Schema.AuthSchema import UserRegisterResponse, Token, ChangePassword
 from Services.EmailService import EmailService
 from TwoFAgoogle.SecretandQRCode import generate_2fa_secret, generate_qrcode
 
@@ -289,7 +291,9 @@ class AuthService(IAuthService):
             )
 
         #endregion Verify code and otp
+    #endregion Verify code and otp
 
+    #region Delete , active and inactive
     def delete_account(self, user_id: int):
         try:
             user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
@@ -392,6 +396,45 @@ class AuthService(IAuthService):
                 token_type="Bearer"
             )
         except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    #endregion Delete , active and inactive
+
+    #region change password
+    def change_password(self, request: ChangePassword):
+        try:
+            user = self.db.query(UserModel).filter(UserModel.email == request.email).first()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+
+            verify_current_password = verify_password_and_hash(request.current_password, user.password_hash)
+            if not verify_current_password:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Current password is incorrect"
+                )
+
+            new_password = hash_password(request.new_password)
+
+            user.fullname = request.fullname
+            user.password_hash = new_password
+
+            self.db.commit()
+            self.db.refresh(user)
+
+            return f"'{user.fullname}' Your password changed successfully"
+        except Exception as ex:
+            self.db.rollback()
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
