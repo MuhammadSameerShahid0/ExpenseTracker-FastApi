@@ -11,6 +11,11 @@ const AccountSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [showDisable2FAModal, setShowDisable2FAModal] = useState(false);
+  const [showLoginHistoryModal, setShowLoginHistoryModal] = useState(false);
+  const [loginHistory, setLoginHistory] = useState([]);
+  const [isFetchingHistory, setIsFetchingHistory] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [logsPerPage] = useState(3);
   const [qrCode, setQrCode] = useState('');
   const [secretKey, setSecretKey] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
@@ -247,6 +252,38 @@ const AccountSettings = () => {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const fetchLoginHistory = async () => {
+    try {
+      setIsFetchingHistory(true);
+      setError('');
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/auth_logging', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Sort logs by datetime in descending order (latest first)
+        const sortedLogs = data.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+        setLoginHistory(sortedLogs);
+        setCurrentPage(1); // Reset to first page
+        setShowLoginHistoryModal(true);
+      } else {
+        setError(data.detail || 'Failed to fetch login history');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching login history');
+    } finally {
+      setIsFetchingHistory(false);
     }
   };
 
@@ -615,8 +652,19 @@ const AccountSettings = () => {
                       <p>View your recent login activity</p>
                     </div>
                   </div>
-                  <button className="btn btn-outline">
-                    View History
+                  <button 
+                    className="btn btn-outline"
+                    onClick={fetchLoginHistory}
+                    disabled={isFetchingHistory}
+                  >
+                    {isFetchingHistory ? (
+                      <>
+                        <div className="spinner-small"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      'View History'
+                    )}
                   </button>
                 </div>
               </div>
@@ -675,6 +723,98 @@ const AccountSettings = () => {
           </div>
         </div>
       </main>
+      {showLoginHistoryModal && (
+        <div className="modal-overlay" onClick={() => setShowLoginHistoryModal(false)}>
+          <div className="modal-content login-history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Login History</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowLoginHistoryModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body">
+              {loginHistory.length > 0 ? (
+                <>
+                  <div className="history-list">
+                    {loginHistory
+                      .slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage)
+                      .map((log, index) => (
+                        <div key={index} className="history-item">
+                          <div className="history-content">
+                            <div className="history-message">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="history-icon">
+                                <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              {log.message}
+                            </div>
+                            <div className="history-details">
+                              <div className="history-detail-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="detail-icon">
+                                  <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                <span className="history-ip">IP: {log.ip_address}</span>
+                              </div>
+                              <div className="history-detail-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="detail-icon">
+                                  <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                <span className="history-date">
+                                  {new Date(log.datetime).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                  {/* Pagination */}
+                  {loginHistory.length > logsPerPage && (
+                    <div className="pagination">
+                      <button 
+                        className="pagination-btn"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                      <span className="pagination-info">
+                        Page {currentPage} of {Math.ceil(loginHistory.length / logsPerPage)}
+                      </span>
+                      <button 
+                        className="pagination-btn"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(loginHistory.length / logsPerPage)))}
+                        disabled={currentPage === Math.ceil(loginHistory.length / logsPerPage)}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="no-history">
+                  <div className="no-history-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <p>No login history found</p>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn btn-primary"
+                onClick={() => setShowLoginHistoryModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

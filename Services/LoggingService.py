@@ -10,12 +10,11 @@ class LoggingService(ILoggingService):
 
     def get_user_auth_logs(self, user_id: int, user_email: str):
         result = []
-        user = self.db.query(LoggingModel).filter(
-            LoggingModel.user_id == user_id
-            or
-            LoggingModel.event_source.startswith("AuthService")).all()
+        logs = self.db.query(LoggingModel).filter(
+            LoggingModel.user_id == user_id,
+            LoggingModel.event_source.startswith("AuthService.Login")).all()
 
-        for log in user:
+        for log in logs:
             response = GetUserAuthLogsResponse(
                 email=user_email,
                 message=log.message,
