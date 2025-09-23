@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BudgetModal from './BudgetModal';
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -20,6 +21,8 @@ const Dashboard = () => {
   const [monthlyTransactions, setMonthlyTransactions] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [totalBudget, setTotalBudget] = useState(0);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [budgetModalTab, setBudgetModalTab] = useState('add'); // Default to 'add'
 
   const navigate = useNavigate();
 
@@ -496,16 +499,39 @@ const fetchTransactions = async (token) => {
             <h3>
               PKR <span style={{ color: "blue" }}>{totalBudget.toFixed(2)}</span>
             </h3>
-            <div className="month-selector-container">
+            <div className="month-selector-container budget-controls">
+              <button 
+                className="budget-control-btn view-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBudgetModalTab('view');
+                  setShowBudgetModal(true);
+                }}
+                title="View Budgets"
+              >
+                👁️
+              </button>
               <div
-                className="current-month-display"
-                onClick={() => {
+                className="current-month-display budget-month-display"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setActiveMonthPicker('budget');
                   setShowMonthPicker(true);
                 }}
               >
                 Budget for {selectedBudgetMonth.toLocaleString("default", { month: "long" })}
               </div>
+              <button 
+                className="budget-control-btn add-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBudgetModalTab('add');
+                  setShowBudgetModal(true);
+                }}
+                title="Add Budget"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -628,6 +654,11 @@ const fetchTransactions = async (token) => {
       </main>
 
       <MonthPicker />
+      <BudgetModal 
+        isOpen={showBudgetModal} 
+        onClose={() => setShowBudgetModal(false)} 
+        initialTab={budgetModalTab} 
+      />
     </div>
   );
 };

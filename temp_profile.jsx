@@ -12,7 +12,6 @@ const Profile = () => {
     categoriesCount: 0
   });
   const [membershipDays, setMembershipDays] = useState(0);
-  const [totalBudget, setTotalBudget] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,8 +22,7 @@ const Profile = () => {
       Promise.all([
         fetchUserProfile(token),
         fetchUserStats(token),
-        fetchCategoriesCount(token),
-        fetchTotalBudgetForMonth(token, new Date().getMonth() + 1)
+        fetchCategoriesCount(token)
       ]).then(() => {
         setLoading(false);
       }).catch((error) => {
@@ -148,29 +146,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Fetch total budget for the month
-  const fetchTotalBudgetForMonth = async (token, month) => {
-    try {
-      const response = await fetch(`/api/total-set-budget-amount-according-to-month?month=${month}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTotalBudget(data);
-      } else {
-        setTotalBudget(0);
-      }
-    } catch (err) {
-      console.error("Failed to fetch total budget for month:", err);
-      setTotalBudget(0);
-    }
-  };
-
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -200,7 +175,7 @@ const Profile = () => {
       <main className="dashboard-main">
         <div className="profile-container">          
           <div className="profile-content">
-            {/* Profile Card */
+            {/* Profile Card */}
 }
             <div className="modern-card profile-card">
               <div className="profile-header-section">
@@ -237,14 +212,16 @@ const Profile = () => {
                       <span className="stat-value">{stats.totalTransactions}</span>
                       <span className="stat-label">Transactions</span>
                     </div>
-                     <div className="stat-item">
-                      <span className="stat-value">PKR {totalBudget.toFixed(2)}</span>
-                      <span className="stat-label">Budget for this month</span>
-                    </div>
-                    <div className="stat-item membership-stat">
-                      <span className="stat-value">{membershipDays}</span>
-                      <span className="stat-label">Days with us 🎉</span>
-                    </div>
+                    
+                     {/* Membership Card */}
+}
+                    <div className="membership-icon">dYZ%</div>
+                    <div className="membership-details">
+                      <h3>Membership</h3>
+                      <div className="membership-days">{membershipDays}</div>
+                      <p>Days with us</p>
+                  </div>
+
                   </div>
                 </div>
               </div>

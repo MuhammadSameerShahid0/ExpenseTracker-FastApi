@@ -283,7 +283,9 @@ const Reports = () => {
                     onChange={(e) => setStartDate(e.target.value)}
                     placeholder="Start Date"
                   />
+                  <center>
                   <span>to</span>
+                  </center>
                   <input
                     type="date"
                     className="filter-input"
@@ -305,7 +307,9 @@ const Reports = () => {
                     placeholder="Min Amount"
                     step="0.01"
                   />
+                   <center>
                   <span>to</span>
+                  </center>
                   <input
                     type="number"
                     className="filter-input"

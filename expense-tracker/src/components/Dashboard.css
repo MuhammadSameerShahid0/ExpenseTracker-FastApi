@@ -401,6 +401,69 @@
   font-size: 0.8rem; /* Reduced font size */
 }
 
+/* Budget Controls */
+.budget-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.budget-control-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.budget-control-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.view-btn {
+  background: var(--success-color, #28a745);
+}
+
+.view-btn:hover {
+  background: var(--success-dark, #218838);
+}
+
+.add-btn {
+  background: var(--primary-color);
+}
+
+.add-btn:hover {
+  background: var(--primary-dark);
+}
+
+.current-month-display {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  background: var(--gray-100);
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 0; /* Allow it to shrink */
+  flex: 1; /* Take remaining space */
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .current-month-display:hover {
   background: var(--gray-200);
 }
@@ -759,4 +822,71 @@
   .chart-label {
     font-size: 11px;
   }
+}
+
+  .chart-label {
+    font-size: 11px;
+  }
+
+/* Budget Controls */
+.budget-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.budget-month-display {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  background: var(--gray-100);
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 0; /* Allow it to shrink */
+  flex: 1; /* Take remaining space */
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.budget-control-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.budget-control-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.view-btn {
+  background: var(--success-color, #28a745);
+}
+
+.view-btn:hover {
+  background: var(--success-dark, #218838);
+}
+
+.add-btn {
+  background: var(--primary-color);
+}
+
+.add-btn:hover {
+  background: var(--primary-dark);
 }

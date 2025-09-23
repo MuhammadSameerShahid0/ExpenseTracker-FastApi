@@ -42,3 +42,12 @@ def total_budget_month_amount(month : str,
     current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
     return  services.budget_month_total(user_id, month)
+
+@BudgetRouter.post("/Edit_budget_amount")
+def edit_budget(
+        category_id: int = Body(...),
+        amount: float = Body(...),
+        services: IBudgetService = Budget_Db_DI,
+        current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    return services.edit_budget_amount(user_id, category_id, amount)

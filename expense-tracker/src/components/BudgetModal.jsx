@@ -10,11 +10,32 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Update activeTab when the modal opens with a new initialTab
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
+
   // Form state for adding budget
   const [formData, setFormData] = useState({
     categoryId: '',
     limit: ''
   });
+
+  // State for budget filtering
+  const [filterTerm, setFilterTerm] = useState('');
+  const [showFilterInput, setShowFilterInput] = useState(false);
+  
+  // State for editing budget
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  
+  // Additional state for edit modal loading and errors
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState('');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,11 +125,92 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
     }
   };
 
-  // Get current budgets for pagination
+  // Filter budgets based on search term
+  const filteredBudgets = budgets.filter(budget => 
+    budget.category_name.toLowerCase().includes(filterTerm.toLowerCase())
+  );
+  
+  // Get current filtered budgets for pagination
   const indexOfLastBudget = currentPage * budgetsPerPage;
   const indexOfFirstBudget = indexOfLastBudget - budgetsPerPage;
-  const currentBudgets = budgets.slice(indexOfFirstBudget, indexOfLastBudget);
-  const totalPages = Math.ceil(budgets.length / budgetsPerPage);
+  const currentFilteredBudgets = filteredBudgets.slice(indexOfFirstBudget, indexOfLastBudget);
+  const filteredTotalPages = Math.ceil(filteredBudgets.length / budgetsPerPage);
+  
+  // Calculate total amount for filtered budgets
+  const filteredTotalAmount = filteredBudgets.reduce((sum, budget) => sum + budget.amount, 0);
+
+  // Function to toggle filter input visibility
+  const toggleFilterInput = () => {
+    const newValue = !showFilterInput;
+    setShowFilterInput(newValue);
+    
+    // Focus the input when showing it
+    if (newValue && filterInputRef.current) {
+      setTimeout(() => {
+        filterInputRef.current.focus();
+      }, 100);
+    }
+  };
+
+  // Function to handle editing a budget
+  const handleEditBudget = (budget) => {
+    setEditingBudget(budget);
+    setEditAmount(budget.amount.toString());
+    setShowEditModal(true);
+  };
+
+  // Function to save edited budget
+  const handleSaveEdit = async () => {
+    if (!editAmount || parseFloat(editAmount) <= 0) {
+      setEditError('Please enter a valid amount');
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      setEditError('');
+      const response = await budgetService.editBudgetAmount(
+        editingBudget.category_id,
+        parseFloat(editAmount)
+      );
+      
+      setEditSuccess(response);
+      setEditingBudget(null);
+      setEditAmount('');
+      setShowEditModal(false);
+      
+      // Refresh budgets list
+      loadBudgets();
+      
+      // Auto-clear success message after 3 seconds
+      setTimeout(() => setEditSuccess(''), 3000);
+    } catch (err) {
+      setEditError(err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Function to handle cancelling edit
+  const handleCancelEdit = () => {
+    setEditingBudget(null);
+    setEditAmount('');
+    setEditError('');
+    setEditSuccess('');
+    setShowEditModal(false);
+  };
+
+  // Function to paginate with filtered budgets
+  const paginateFiltered = (pageNumber) => {
+    const newStartIndex = (pageNumber - 1) * budgetsPerPage;
+    if (newStartIndex < filteredBudgets.length || pageNumber === 1) {
+      setCurrentPage(pageNumber);
+    } else if (filteredBudgets.length > 0) {
+      // If the page would be empty, go to the last valid page
+      const lastValidPage = Math.max(1, Math.ceil(filteredBudgets.length / budgetsPerPage));
+      setCurrentPage(lastValidPage);
+    }
+  };
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -197,61 +299,79 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
             </form>
           ) : (
             <div className="budgets-list">
+              {/* Filter input */}
+              <div className="filter-section">
+                <span className="filter-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Filter by category..."
+                  value={filterTerm}
+                  onChange={(e) => setFilterTerm(e.target.value)}
+                  className="filter-input"
+                />
+              </div>
+              
               {loading ? (
                 <div className="loading">Loading budgets...</div>
-              ) : currentBudgets.length > 0 ? (
+              ) : filteredBudgets.length > 0 ? (
                 <>
                   <div className="budgets-grid">
-                    {currentBudgets.map(budget => (
+                    {currentFilteredBudgets.map(budget => (
                       <div key={budget.id} className="budget-card">
-                        <div className="budget-category">{budget.category_name}</div>
-                        <div className="budget-amount">PKR {budget.amount.toFixed(2)}</div>
-                        <div className="budget-month">
-                          {new Date(2023, budget.month - 1).toLocaleString('default', { month: 'long' })}
+                        <div className="budget-icon">💰</div>
+                        <div className="budget-info">
+                          <div className="budget-amount">PKR {budget.amount.toFixed(2)}</div>
+                          <span> {budget.category_name}</span>
+                            &nbsp; &nbsp;
+                          <div className="budget-month">
+                            {new Date(2023, budget.month - 1).toLocaleString('default', { month: 'long' })}
+                          </div>
                         </div>
+                        <button className="edit-budget-btn" title="Edit Budget" onClick={() => handleEditBudget(budget)}>
+                          ✏️
+                        </button>
                       </div>
                     ))}
                   </div>
+                  
+                  {/* Total amount display */}
+                  <div className="total-amount-section">
+                    <div className="total-amount-label">Total Amount:</div>
+                    <div className="total-amount-value">PKR {filteredTotalAmount.toFixed(2)}</div>
+                  </div>
+                  
                   {/* Pagination controls */}
-                  {totalPages > 1 && (
-                    <div className="pagination-controls">
-                      <div className="pagination-info">
-                        Showing {indexOfFirstBudget + 1}-{Math.min(indexOfLastBudget, budgets.length)} of {budgets.length} budgets
-                      </div>
+                  {filteredTotalPages > 1 && (
                       <div className="pagination">
                         <button 
-                          onClick={() => paginate(currentPage - 1)} 
+                          onClick={() => paginateFiltered(currentPage - 1)} 
                           disabled={currentPage === 1}
                           className="pagination-btn"
                         >
-                          Previous
+                          Prev
                         </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-                          <button
-                            key={number}
-                            onClick={() => paginate(number)}
-                            className={`pagination-btn ${currentPage === number ? 'active' : ''}`}
-                          >
-                            {number}
-                          </button>
-                        ))}
+                        <span className="page-info">
+                          {currentPage} of {filteredTotalPages}
+                        </span>
                         <button 
-                          onClick={() => paginate(currentPage + 1)} 
-                          disabled={currentPage === totalPages}
+                          onClick={() => paginateFiltered(currentPage + 1)} 
+                          disabled={currentPage === filteredTotalPages}
                           className="pagination-btn"
                         >
                           Next
                         </button>
                       </div>
-                    </div>
                   )}
                 </>
               ) : (
                 <div className="no-budgets">
-                  <p>No budgets set yet.</p>
+                  <p>No budgets found.</p>
                   <button 
                     className="btn btn-outline"
-                    onClick={() => setActiveTab('add')}
+                    onClick={() => {
+                      setFilterTerm('');
+                      setActiveTab('add');
+                    }}
                   >
                     Add Your First Budget
                   </button>
@@ -261,6 +381,83 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
           )}
         </div>
       </div>
+      
+      {/* Edit Budget Modal */}
+      {showEditModal && editingBudget && (
+        <div className="edit-budget-modal-overlay" onClick={handleCancelEdit}>
+          <div className="edit-budget-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="edit-budget-header">
+              <h3>Edit Budget</h3>
+              <button className="modal-close" onClick={handleCancelEdit}>&times;</button>
+            </div>
+            
+            {editError && (
+              <div className="alert error">
+                <div className="alert-content">{editError}</div>
+                <button className="alert-close" onClick={() => setEditError('')}>×</button>
+              </div>
+            )}
+            
+            {editSuccess && (
+              <div className="alert success">
+                <div className="alert-content">{editSuccess}</div>
+              </div>
+            )}
+            
+            <div className="edit-budget-form">
+              <div className="form-group">
+                <label>Category</label>
+                <input
+                  type="text"
+                  value={editingBudget.category_name || ''}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Month</label>
+                <input
+                  type="text"
+                  value={new Date(2023, editingBudget.month - 1).toLocaleString('default', { month: 'long' })}
+                  readOnly
+                  className="readonly-input"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Amount (PKR)</label>
+                <input
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  className="editable-input"
+                  disabled={editLoading}
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={handleSaveEdit}
+                  disabled={editLoading}
+                >
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button 
+                  className="btn btn-outline"
+                  onClick={handleCancelEdit}
+                  disabled={editLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

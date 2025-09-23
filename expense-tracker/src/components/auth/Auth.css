@@ -948,42 +948,55 @@ body {
 
 .user-stats {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.4rem;
   margin-top: 1.5rem;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent wrapping to keep all items in one line */
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  padding: 0.8rem;
+  padding-bottom: 0.8rem; /* Add some space for scrollbar if needed */
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
+  padding: 0.8rem 0.7rem; /* Increased padding for more comfortable spacing */
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  min-width: 120px;
+  min-width: 90px;
+  max-width: 110px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex: 0 0 auto; /* Prevent flex items from growing */
 }
 
 .stat-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--primary-color);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap; /* Keep PKR and amount on same line */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if text is too long */
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   font-weight: 500;
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-word; /* Allow text to break if needed */
 }
 
 .profile-details-grid {

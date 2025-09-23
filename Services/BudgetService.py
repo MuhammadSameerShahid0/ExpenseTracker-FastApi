@@ -91,8 +91,31 @@ class BudgetService(IBudgetService):
             )
 
     def budget_month_total(self, user_id: int, month: str):
-        user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id, BudgetModel.month == month).all()
-        if user_budget is []:
-            return 0.0
+        try:
+            user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id, BudgetModel.month == month).all()
+            if user_budget is []:
+                return 0.0
+            return sum(exp.limit_amount for exp in user_budget)
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
 
-        return sum(exp.limit_amount for exp in user_budget)
+    def edit_budget_amount(self, user_id: int, category_id: int, amount: float):
+        try:
+            user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id, BudgetModel.category_id == category_id).first()
+            if user_budget is not None:
+                user_budget.limit_amount = amount
+                self.db.commit()
+                self.db.refresh(user_budget)
+
+                return "Successfully updated budget amount"
+            return "Failed to update budget amount"
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )

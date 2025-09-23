@@ -83,5 +83,29 @@ export const budgetService = {
     }
 
     return await response.json();
+  },
+
+  // Edit budget amount
+  async editBudgetAmount(categoryId, amount) {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/api/Edit_budget_amount`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        category_id: categoryId,
+        amount: amount
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to edit budget amount');
+    }
+
+    return await response.json();
   }
 };
