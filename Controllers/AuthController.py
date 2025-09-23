@@ -26,10 +26,8 @@ def register(request_session: Request,
              ):
     try:
         result = services.register_user(request, request_session)
-        # If result is a UserRegisterResponse object, return it directly
         if isinstance(result, UserRegisterResponse):
             return result
-        # Otherwise, return as a message with QR code data
         qr_code = request_session.session.get("2FA QrCode", "")
         secret_key = request_session.session.get("2FA Secret")
         return {"message": result, "qr_code_2fa": qr_code, "secret_key_2fa": secret_key}
@@ -42,10 +40,8 @@ def login(request_session: Request,
              services : IAuthService = Auth_Db_DI
              ):
     result = services.login(request, request_session)
-    # If result is a Token object, return it directly
     if isinstance(result, Token):
         return result
-    # Otherwise, return as a message string
     return result
 
 @AuthRouter.get("/RegistrationVerificationEmailCodeAnd2FAOtp")

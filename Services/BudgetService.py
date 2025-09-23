@@ -17,9 +17,11 @@ class BudgetService(IBudgetService):
     def add_budget(self, user_id: int, amount: float, category_id: int):
         try:
             errors = []
+            current_month = datetime.now().month
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id , BudgetModel.category_id == category_id).first()
             if user_budget is not None:
-                errors.append(f"Budget for this category already set")
+                if user_budget.month <= str(current_month):
+                    errors.append(f"Budget for this category already set")
 
             check_category = self.db.query(CategoryModel).filter(CategoryModel.id == category_id , CategoryModel.user_id == user_id).first()
             if check_category is None:
@@ -36,7 +38,7 @@ class BudgetService(IBudgetService):
                 category_id = category_id,
                 limit_amount = amount,
                 user_id = user_id,
-                month = datetime.now().month
+                month = str(current_month)
             )
 
             self.db.add(response)

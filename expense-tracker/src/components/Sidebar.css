@@ -55,6 +55,9 @@
   flex: 1;
   padding: 1rem 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .nav-link {
@@ -66,6 +69,7 @@
   transition: var(--transition);
   gap: 1rem;
   border-left: 3px solid transparent;
+  cursor: pointer;
 }
 
 .nav-link:hover {
@@ -92,12 +96,56 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
+  flex: 1;
 }
 
 .sidebar-footer {
   padding: 1rem;
   border-top: 1px solid var(--gray-300);
   position: relative;
+}
+
+/* Budget Menu Styles */
+.budget-menu-container {
+  position: relative;
+}
+
+.budget-trigger {
+  position: relative;
+  cursor: pointer;
+}
+
+.budget-trigger .dropdown-arrow {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.budget-trigger .dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Budget Dropdown - Positioned outside sidebar */
+.budget-dropdown {
+  position: fixed;
+  left: 250px; /* Position to the right of expanded sidebar */
+  top: 60%; /* Center vertically relative to the trigger */
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  width: 200px;
+  overflow: hidden;
+  animation: slideInRight 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+/* When sidebar is collapsed */
+.sidebar.collapsed ~ .budget-dropdown,
+.sidebar.collapsed .budget-dropdown {
+  left: 70px; /* Position to the right of collapsed sidebar */
 }
 
 /* Settings Menu Styles */
@@ -118,7 +166,8 @@
   width: 100%;
 }
 
-.settings-trigger:hover {
+.settings-trigger:hover,
+.settings-trigger.active {
   background-color: var(--gray-100);
 }
 
@@ -168,12 +217,11 @@
   transform: rotate(180deg);
 }
 
-/* Settings Dropdown - Fixed Positioning */
+/* Settings Dropdown - Positioned outside sidebar */
 .settings-dropdown {
   position: fixed;
   left: 250px; /* Position to the right of the sidebar */
-  top: auto;
-  bottom: 1rem;
+  bottom: 1rem; /* Position at the bottom */
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -411,6 +459,10 @@ input:checked + .slider:before {
   padding: 0.5rem;
 }
 
+.sidebar.collapsed .budget-trigger {
+  justify-content: center;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
@@ -430,7 +482,8 @@ input:checked + .slider:before {
     padding-right: 1rem;
   }
 
-  .settings-dropdown {
+  .settings-dropdown,
+  .budget-dropdown {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -442,7 +495,8 @@ input:checked + .slider:before {
 }
 
 /* Dark Theme Overrides */
-[data-theme='dark'] .settings-dropdown {
+[data-theme='dark'] .settings-dropdown,
+[data-theme='dark'] .budget-dropdown {
   background-color: #1f1f1f;
   border-color: #333;
 }
@@ -455,6 +509,7 @@ input:checked + .slider:before {
   background-color: #2d2d2d;
 }
 
-[data-theme='dark'] .settings-trigger:hover {
+[data-theme='dark'] .settings-trigger:hover,
+[data-theme='dark'] .budget-trigger:hover {
   background-color: #2d2d2d;
 }
