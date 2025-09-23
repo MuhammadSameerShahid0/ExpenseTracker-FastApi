@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from Services.BudgetService import BudgetService
 from Services.LoggingService import LoggingService
 from Services.TwoFaService import TwoFaService
 from Services.AuthService import AuthService
@@ -18,6 +19,7 @@ class ServiceFactory:
         "user" : UserService,
         "twofa" : TwoFaService,
         "logging" : LoggingService,
+        "budget" : BudgetService,
     }
 
     @staticmethod

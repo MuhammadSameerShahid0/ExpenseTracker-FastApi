@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
 import './Dashboard.css';
 import './ExpensesList.css';
 
@@ -155,7 +154,6 @@ const ExpensesList = () => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading expenses...</p>
@@ -167,7 +165,6 @@ const ExpensesList = () => {
   if (error) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
@@ -180,8 +177,6 @@ const ExpensesList = () => {
 
   return (
     <div className="expenses-container">
-      <Navbar />
-      
       <main className="expenses-main">
         <div className="expenses-layout">
           {/* Sidebar with totals and categories */}

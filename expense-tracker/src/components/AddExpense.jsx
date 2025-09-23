@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
 import './AddExpense.css';
 
 const AddExpense = () => {
@@ -127,7 +126,6 @@ const AddExpense = () => {
 
   return (
     <div className="dashboard-container">
-      <Navbar />
       <main className="dashboard-main">
         <div className="form-page-layout">
           {/* Left side: Blog / Tips Section */}

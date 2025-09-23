@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -382,7 +381,6 @@ const fetchTransactions = async (token) => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading dashboard...</p>
@@ -394,7 +392,6 @@ const fetchTransactions = async (token) => {
   if (error) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={() => navigate("/login")} className="btn btn-primary">
@@ -407,8 +404,6 @@ const fetchTransactions = async (token) => {
 
   return (
     <div className="dashboard-container">
-      <Navbar />
-
       <main className="dashboard-main">
         <div className="dashboard-stats">
           <div className="stat-card">

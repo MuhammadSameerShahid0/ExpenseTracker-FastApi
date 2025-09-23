@@ -1,43 +1,32 @@
 /* Expenses Container */
 .expenses-container {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
 .expenses-main {
-  padding: 0;
-  width: 100%;
-  max-width: none;
+  flex: 1;
+  display: flex;
+  overflow-y: auto; /* page scroll applies here */
 }
+
 
 .expenses-layout {
   display: grid;
   grid-template-columns: 320px 1fr;
-  gap: 0;
-  min-height: calc(100vh - 80px);
+  width: 100%;
   align-items: stretch;
 }
 
 .expenses-sidebar {
-  position: sticky;
-  top: 80px;
-  height: calc(100vh - 80px);
-  overflow-y: auto;
-  background: var(--sidebar-bg, var(--card-bg));
-  border-right: 1px solid var(--border-color, #e0e0e0);
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  /* ✨ Styling upgrades */
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.06); /* soft shadow on the right */
-  transition: all 0.3s ease;
+  height: auto; /* let it grow */
+  position: sticky; /* keep fixed while scrolling */
+  top: 0;
 }
-
 /* Smooth hover effect when hovering sidebar */
 .expenses-sidebar:hover {
   box-shadow: 6px 0 16px rgba(0, 0, 0, 0.08);
@@ -61,10 +50,9 @@
 .expenses-content {
   background: var(--bg-primary);
   padding: 32px;
-  overflow-y: auto;
-  max-height: calc(100vh - 80px);
+  height: auto; /* no fixed height */
+  overflow: visible; /* remove scrollbar from here */
 }
-
 /* Pie Chart Styles */
 .pie-chart-container {
   display: flex;
@@ -218,7 +206,9 @@
   padding: 20px;
   box-shadow: var(--card-shadow);
   border: 1px solid var(--border-color);
+  margin-bottom: 16px; /* adds space between cards */
 }
+
 
 .sidebar-card h3 {
   margin: 0 0 16px 0;

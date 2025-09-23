@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Navbar';
 import './AccountSettings.css';
 
 const AccountSettings = () => {
@@ -290,7 +289,6 @@ const AccountSettings = () => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading account settings...</p>
@@ -302,7 +300,6 @@ const AccountSettings = () => {
   if (error && !user) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
@@ -315,7 +312,6 @@ const AccountSettings = () => {
 
   return (
     <div className="dashboard-container">
-      <Navbar />
       <main className="dashboard-main">
         <div className="settings-container">
           <div className="settings-header">

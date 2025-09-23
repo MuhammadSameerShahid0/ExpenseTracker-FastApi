@@ -1,0 +1,13 @@
+from abc import ABC, abstractmethod
+from typing import List
+
+
+class IBudgetService(ABC):
+
+    @abstractmethod
+    def add_budget(self, user_id: int, amount: float,category_id: int) -> str:
+        pass
+
+    @abstractmethod
+    def get_budgets(self, user_id: int) -> List[dict]:
+        pass

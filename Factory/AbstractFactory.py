@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from Factory.Interface.IAbstractFactory import IAbstractFactory
 from Factory.RegistryFactory import ServiceFactory
+from Interfaces.IBudgetService import IBudgetService
 from Interfaces.ILoggingService import ILoggingService
 from Interfaces.ITwoFaService import ITwoFaService
 from Interfaces.IAuthService import IAuthService
@@ -28,3 +29,6 @@ class MySqlServiceFactory(IAbstractFactory):
 
     def logging_service(self, db: Session) -> ILoggingService:
         return ServiceFactory.get_services("logging", db)
+
+    def budget_service(self, db: Session) -> IBudgetService:
+        return ServiceFactory.get_services("budget", db)

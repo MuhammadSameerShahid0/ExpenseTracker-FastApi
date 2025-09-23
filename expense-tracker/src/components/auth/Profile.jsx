@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Navbar';
 import './Auth.css';
 
 const Profile = () => {
@@ -150,7 +149,6 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading profile...</p>
@@ -162,7 +160,6 @@ const Profile = () => {
   if (error) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
@@ -175,11 +172,11 @@ const Profile = () => {
 
   return (
     <div className="dashboard-container">
-      <Navbar />
       <main className="dashboard-main">
         <div className="profile-container">          
           <div className="profile-content">
-            {/* Profile Card */}
+            {/* Profile Card */
+}
             <div className="modern-card profile-card">
               <div className="profile-header-section">
                 <div className="avatar-container">
@@ -216,7 +213,8 @@ const Profile = () => {
                       <span className="stat-label">Transactions</span>
                     </div>
                     
-                     {/* Membership Card */}
+                     {/* Membership Card */
+}
                     <div className="membership-icon">🎉</div>
                     <div className="membership-details">
                       <h3>Membership</h3>

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import Navbar from './Navbar';
 import './Reports.css';
 import { useAuth } from './auth/AuthContext';
 
@@ -208,7 +207,6 @@ const Reports = () => {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="loading">
           <div className="spinner"></div>
           <p>Loading reports...</p>
@@ -220,7 +218,6 @@ const Reports = () => {
   if (error) {
     return (
       <div className="dashboard-container">
-        <Navbar />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
@@ -233,8 +230,6 @@ const Reports = () => {
 
   return (
     <div className="reports-container">
-      <Navbar />
-      
       <main className="reports-main">
         <div className="reports-layout">
           {/* Sidebar with filters */}
