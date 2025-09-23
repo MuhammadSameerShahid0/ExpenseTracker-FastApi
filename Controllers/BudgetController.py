@@ -35,3 +35,10 @@ def get_budgets(
 ):
     user_id = current_user["id"]
     return services.get_budgets(user_id)
+
+@BudgetRouter.get("/total-set-budget-amount-according-to-month")
+def total_budget_month_amount(month : str,
+                              services: IBudgetService = Budget_Db_DI,
+    current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    return  services.budget_month_total(user_id, month)

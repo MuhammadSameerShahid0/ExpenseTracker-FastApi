@@ -11,3 +11,7 @@ class IBudgetService(ABC):
     @abstractmethod
     def get_budgets(self, user_id: int) -> List[dict]:
         pass
+
+    @abstractmethod
+    def budget_month_total(self, user_id: int, month: str) -> float:
+        pass

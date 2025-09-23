@@ -438,15 +438,20 @@
 
 /* Pagination */
 .pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 32px;
-  padding: 20px;
-  background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
+  display: flex !important;
+  flex-direction: row !important; /* Ensure horizontal layout */
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-top: 32px !important;
+  padding: 20px !important;
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  flex-wrap: nowrap !important; /* Prevent wrapping by default */
+  width: 100% !important; /* Ensure full width */
+  max-width: 100% !important; /* Prevent overflow */
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
 }
 
 .pagination-btn {
@@ -458,6 +463,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
+  min-width: 100px; /* Ensure consistent width */
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -472,8 +478,11 @@
 }
 
 .pagination-numbers {
-  display: flex;
-  gap: 8px;
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important; /* Prevent page numbers from wrapping */
+  overflow-x: auto; /* Allow scrolling if needed */
+  padding: 0 4px; /* Add some padding */
 }
 
 .pagination-number {
@@ -582,12 +591,23 @@
   }
 
   .pagination-controls {
-    flex-direction: column;
-    gap: 12px;
+    flex-wrap: nowrap !important; /* Ensure horizontal layout */
+    gap: 10px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 15px !important;
   }
 
-  .pagination-numbers {
-    order: -1;
+  .pagination-btn {
+    padding: 6px 12px !important; /* Smaller padding for tight spaces */
+    min-width: auto !important; /* Allow buttons to shrink */
+    font-size: 13px !important;
+  }
+
+  .pagination-number {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
   }
 }
 
@@ -600,9 +620,23 @@
     padding: 16px;
   }
 
-  .pagination-numbers {
-    flex-wrap: wrap;
-    justify-content: center;
+  .pagination-controls {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 6px !important; /* Smaller gap for tight spaces */
+    padding: 10px !important;
+  }
+
+  .pagination-btn {
+    padding: 5px 8px !important;
+    min-width: auto !important;
+    font-size: 11px !important; /* Smaller font for tight spaces */
+  }
+
+  .pagination-number {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11px !important;
   }
 }
 

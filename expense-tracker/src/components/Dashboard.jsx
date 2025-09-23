@@ -9,14 +9,17 @@ const Dashboard = () => {
   const [latestTransactions, setLatestTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedBudgetMonth, setSelectedBudgetMonth] = useState(new Date());
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [activeMonthPicker, setActiveMonthPicker] = useState('main'); // 'main' or 'budget'
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [monthlyTransactions, setMonthlyTransactions] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const [totalBudget, setTotalBudget] = useState(0);
 
   const navigate = useNavigate();
 
@@ -106,6 +109,7 @@ const Dashboard = () => {
         selectedDate.getFullYear(),
         selectedDate.getMonth() + 1
       ),
+      fetchTotalBudgetForMonth(token, selectedBudgetMonth.getMonth() + 1)
     ]);
   };
 
@@ -256,6 +260,29 @@ const fetchTransactions = async (token) => {
     }
   };
 
+  // ✅ Fetch total budget for the month
+  const fetchTotalBudgetForMonth = async (token, month) => {
+    try {
+      const response = await fetch(`/api/total-set-budget-amount-according-to-month?month=${month}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTotalBudget(data);
+      } else {
+        setTotalBudget(0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch total budget for month:", err);
+      setTotalBudget(0);
+    }
+  };
+
   const handleMonthChange = (newDate) => {
     setSelectedDate(newDate);
     setShowMonthPicker(false);
@@ -263,6 +290,24 @@ const fetchTransactions = async (token) => {
     const token = localStorage.getItem("token");
     if (token) {
       fetchMonthlyData(token, newDate.getFullYear(), newDate.getMonth() + 1);
+    }
+  };
+
+  const handleBudgetMonthChange = (newDate) => {
+    setSelectedBudgetMonth(newDate);
+    setShowMonthPicker(false);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchTotalBudgetForMonth(token, newDate.getMonth() + 1);
+    }
+  };
+
+  const handleMonthPickerSelect = (newDate) => {
+    if (activeMonthPicker === 'main') {
+      handleMonthChange(newDate);
+    } else {
+      handleBudgetMonthChange(newDate);
     }
   };
 
@@ -304,6 +349,8 @@ const fetchTransactions = async (token) => {
   const MonthPicker = () => {
     if (!showMonthPicker) return null;
 
+    // Use the appropriate date based on which picker is active
+    const pickerDate = activeMonthPicker === 'main' ? selectedDate : selectedBudgetMonth;
     const months = [
       "January",
       "February",
@@ -339,32 +386,45 @@ const fetchTransactions = async (token) => {
           </div>
 
           <div className="month-picker-content">
-            <div className="year-selector">
-              {years.map((year) => (
-                <div
-                  key={year}
-                  className={`year-option ${
-                    selectedDate.getFullYear() === year ? "selected" : ""
-                  }`}
-                  onClick={() =>
-                    handleMonthChange(new Date(year, selectedDate.getMonth(), 1))
-                  }
-                >
-                  {year}
-                </div>
-              ))}
-            </div>
+            {/* Show year selector only for main picker, not for budget picker */}
+            {activeMonthPicker === 'main' && (
+              <div className="year-selector">
+                {years.map((year) => (
+                  <div
+                    key={year}
+                    className={`year-option ${
+                      pickerDate.getFullYear() === year ? "selected" : ""
+                    }`}
+                    onClick={() =>
+                      handleMonthPickerSelect(new Date(year, pickerDate.getMonth(), 1))
+                    }
+                  >
+                    {year}
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="month-grid">
               {months.map((month, index) => (
                 <div
                   key={index}
                   className={`month-option ${
-                    selectedDate.getMonth() === index ? "selected" : ""
+                    (activeMonthPicker === 'main' 
+                      ? pickerDate.getMonth() === index 
+                      : selectedBudgetMonth.getMonth() === index) 
+                      ? "selected" 
+                      : ""
                   }`}
                   onClick={() =>
-                    handleMonthChange(
-                      new Date(selectedDate.getFullYear(), index, 1)
+                    handleMonthPickerSelect(
+                      new Date(
+                        activeMonthPicker === 'main' 
+                          ? pickerDate.getFullYear() 
+                          : currentYear, // Use current year for budget picker
+                        index, 
+                        1
+                      )
                     )
                   }
                 >
@@ -420,10 +480,31 @@ const fetchTransactions = async (token) => {
             <div className="month-selector-container">
               <div
                 className="current-month-display"
-                onClick={() => setShowMonthPicker(true)}
+                onClick={() => {
+                  setActiveMonthPicker('main');
+                  setShowMonthPicker(true);
+                }}
               >
                 {selectedDate.toLocaleString("default", { month: "long" })}{" "}
                 {selectedDate.getFullYear()}
+                <span>&nbsp;(Spent)</span>                 
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <h3>
+              PKR <span style={{ color: "blue" }}>{totalBudget.toFixed(2)}</span>
+            </h3>
+            <div className="month-selector-container">
+              <div
+                className="current-month-display"
+                onClick={() => {
+                  setActiveMonthPicker('budget');
+                  setShowMonthPicker(true);
+                }}
+              >
+                Budget for {selectedBudgetMonth.toLocaleString("default", { month: "long" })}
               </div>
             </div>
           </div>

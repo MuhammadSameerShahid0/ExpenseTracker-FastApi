@@ -63,5 +63,25 @@ export const budgetService = {
     }
 
     return await response.json();
+  },
+
+  // Get total set budget amount according to month
+  async getTotalBudgetAmountForMonth(month) {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/api/total-set-budget-amount-according-to-month?month=${month}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to fetch total budget amount');
+    }
+
+    return await response.json();
   }
 };
