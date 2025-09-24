@@ -51,3 +51,11 @@ def edit_budget(
         current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
     return services.edit_budget_amount(user_id, category_id, amount)
+
+@BudgetRouter.delete("/delete_set_budget")
+def delete_budget(
+        category_id: int,
+        services: IBudgetService = Budget_Db_DI,
+        current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    return services.delete_set_budget(user_id, category_id)

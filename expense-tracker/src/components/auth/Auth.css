@@ -932,7 +932,7 @@ body {
 }
 
 .user-email {
-  color: rgba(255, 255, 255, 0.9);
+  color: white;
   font-size: 1.1rem;
   margin: 0 0 1rem 0;
   text-align: left;

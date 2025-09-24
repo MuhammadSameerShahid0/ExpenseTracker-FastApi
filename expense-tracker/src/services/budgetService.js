@@ -107,5 +107,25 @@ export const budgetService = {
     }
 
     return await response.json();
+  },
+
+  // Delete budget
+  async deleteBudget(categoryId) {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/api/delete_set_budget?category_id=${categoryId}`, {        
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to delete budget');
+    }
+
+    return await response.json();
   }
 };

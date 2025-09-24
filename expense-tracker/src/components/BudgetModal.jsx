@@ -36,6 +36,13 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
+  
+  // State for delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteSuccess, setDeleteSuccess] = useState('');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +74,7 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
       setLoading(true);
       const data = await budgetService.getCategories();
       // Filter only expense categories
-      const expenseCategories = data.filter(cat => cat.type === 'expense');
+      const expenseCategories = data;
       setCategories(expenseCategories);
     } catch (err) {
       setError(err.message);
@@ -200,6 +207,45 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
     setShowEditModal(false);
   };
 
+  // Function to handle deleting a budget
+  const handleDeleteBudget = (budget) => {
+    setBudgetToDelete(budget);
+    setShowDeleteModal(true);
+  };
+
+  // Function to confirm delete
+  const handleConfirmDelete = async () => {
+    if (!budgetToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      setDeleteError('');
+      const response = await budgetService.deleteBudget(budgetToDelete.category_id);
+      
+      setDeleteSuccess(response);
+      setBudgetToDelete(null);
+      setShowDeleteModal(false);
+      
+      // Refresh budgets list
+      loadBudgets();
+      
+      // Auto-clear success message after 3 seconds
+      setTimeout(() => setDeleteSuccess(''), 3000);
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Function to handle cancelling delete
+  const handleCancelDelete = () => {
+    setBudgetToDelete(null);
+    setDeleteError('');
+    setDeleteSuccess('');
+    setShowDeleteModal(false);
+  };
+
   // Function to paginate with filtered budgets
   const paginateFiltered = (pageNumber) => {
     const newStartIndex = (pageNumber - 1) * budgetsPerPage;
@@ -328,7 +374,14 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
                           </div>
                         </div>
                         <button className="edit-budget-btn" title="Edit Budget" onClick={() => handleEditBudget(budget)}>
-                          ✏️
+                          Edit
+                        </button>
+                        <button 
+                          className="delete-budget-btn" 
+                          title="Delete Budget" 
+                          onClick={() => handleDeleteBudget(budget)}
+                        >
+                          Delete
                         </button>
                       </div>
                     ))}
@@ -454,6 +507,53 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Delete Budget Confirmation Modal */}
+      {showDeleteModal && budgetToDelete && (
+        <div className="delete-budget-modal-overlay" onClick={handleCancelDelete}>
+          <div className="delete-budget-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-budget-header">
+              <h3>Confirm Delete</h3>
+              <button className="modal-close" onClick={handleCancelDelete}>&times;</button>
+            </div>
+            
+            {deleteError && (
+              <div className="alert error">
+                <div className="alert-content">{deleteError}</div>
+                <button className="alert-close" onClick={() => setDeleteError('')}>×</button>
+              </div>
+            )}
+            
+            {deleteSuccess && (
+              <div className="alert success">
+                <div className="alert-content">{deleteSuccess}</div>
+              </div>
+            )}
+            
+            <div className="delete-budget-content">
+              <p>Are you sure you want to delete the budget for <strong>{budgetToDelete.category_name}</strong>?</p>
+              <p>This action cannot be undone.</p>
+            </div>
+            
+            <div className="form-actions">
+              <button 
+                className="btn btn-danger"
+                onClick={handleConfirmDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+              <button 
+                className="btn btn-outline"
+                onClick={handleCancelDelete}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
