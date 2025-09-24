@@ -1,3 +1,5 @@
+import os
+import uuid
 from datetime import datetime
 import pyotp
 from fastapi import HTTPException, Request
@@ -7,11 +9,13 @@ from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
 from Models.Table.User import User as UserModel
 from Interfaces.IAuthService import IAuthService
 from OAuthandJWT.JWTToken import create_jwt
+from OAuthandJWT.oauth_config import google_oauth
 from PasslibPasswordHash.hashpassword import hash_password, verify_password_and_hash
 from Schema import AuthSchema
 from Schema.AuthSchema import UserRegisterResponse, Token, ChangePassword
 from Services.EmailService import EmailService
 from TwoFAgoogle.SecretandQRCode import generate_2fa_secret, generate_qrcode
+
 
 class AuthService(IAuthService):
     def __init__(self, db: Session, email_service: EmailService):
@@ -19,19 +23,176 @@ class AuthService(IAuthService):
         self.email_service = email_service
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
-        # region register
+    async def google_register(self, request: Request):
+        try:
+            frontend_redirect_uri = request.query_params.get("frontend_redirect_uri")
+            if frontend_redirect_uri is None:
+                redirect_uri = os.getenv("REDIRECT_URI")
+            else:
+                redirect_uri = f"{frontend_redirect_uri}/api/callback"
+
+            if not redirect_uri:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Redirect URI not configured"
+                )
+            request.session["frontend_redirect_uri"] = frontend_redirect_uri
+
+            return await google_oauth.google.authorize_redirect(request, redirect_uri)
+        except Exception as ex:
+            code = getattr(ex, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    async def google_callback(self, request: Request):
+        try:
+            token = await google_oauth.google.authorize_access_token(request)
+            if not token or "userinfo" not in token:
+                # Redirect with error if unable to fetch user info
+                frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                if frontend_redirect_uri:
+                    # Redirect to login page to show the error
+                    error_redirect_url = f"{frontend_redirect_uri}/login?error=google_auth_failed&error_description=Failed to fetch Google user info"
+                    from fastapi.responses import RedirectResponse
+                    return RedirectResponse(url=error_redirect_url)
+                else:
+                    raise HTTPException(status_code=400, detail="Failed to fetch Google user info")
+
+            user_info = token["userinfo"]
+            user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
+            if user_model is not None:
+                if user_model.password_hash == "Register with google":
+                    if user_model.is_active is False:
+                        logger_message = "Credentials verified, But account not active"
+                        self.file_and_db_handler_log.info_logger(
+                            loglevel="INFO",
+                            message=logger_message,
+                            event_source="AuthService.Login",
+                            exception="NULL",
+                            user_id=user_model.id
+                        )
+                        frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                        error_redirect_url = f"{frontend_redirect_uri}/login?error=google_auth_failed&error_description=Account not active, Re-active if you want"
+                        from fastapi.responses import RedirectResponse
+                        return RedirectResponse(url=error_redirect_url)
+
+                    token = create_jwt({
+                        "id": user_model.id,
+                        "email": user_model.email,
+                        "username": user_model.username,
+                        "from_project": "ExpenseTracker"
+                    })
+
+                    # Redirect to frontend with token
+                    frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                    if frontend_redirect_uri:
+                        logger_message = "Google Login Successful"
+                        self.file_and_db_handler_log.info_logger(
+                            loglevel="INFO",
+                            message=logger_message,
+                            event_source="AuthService.Login",
+                            exception="NULL",
+                            user_id=user_model.id
+                        )
+                        from fastapi.responses import RedirectResponse
+                        redirect_url = f"{frontend_redirect_uri}/dashboard?access_token={token}&token_type=bearer"
+                        return RedirectResponse(url=redirect_url)
+                    else:
+                        return Token(
+                            access_token=token,
+                            token_type="bearer"
+                        )
+                else:
+                    # Redirect to login page for users who registered manually
+                    frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                    if frontend_redirect_uri:
+                        error_redirect_url = f"{frontend_redirect_uri}/login?error=login_permission&error_description={'Login manually, You don\'t have the permission to login with google'.replace(' ', '%20')}"
+                        from fastapi.responses import RedirectResponse
+                        return RedirectResponse(url=error_redirect_url)
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Login manually, You don't have the permission to login with google"
+                        )
+            else:
+                # New user registration
+                user = UserModel(
+                    username=user_info['name'],
+                    fullname=user_info['name'],
+                    email=user_info['email'],
+                    password_hash = "Register with google",
+                    created_at=datetime.now(),
+                    status_2fa=False,
+                    secret_2fa=str(uuid.uuid4()),
+                    is_active=True,
+                    in_active_date = None,
+                )
+
+                self.db.add(user)
+                self.db.commit()
+                self.db.refresh(user)
+                token = create_jwt({
+                    "id": user.id,
+                    "email": user.email,
+                    "username": user.username,
+                    "from_project": "ExpenseTracker"
+                })
+
+                # Redirect to frontend with token
+                frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                if frontend_redirect_uri:
+                    from fastapi.responses import RedirectResponse
+                    redirect_url = f"{frontend_redirect_uri}/dashboard?access_token={token}&token_type=bearer"
+                    return RedirectResponse(url=redirect_url)
+                else:
+                    # Fallback: return JSON response
+                    return Token(
+                        access_token=token,
+                        token_type="bearer"
+                    )
+        except Exception as ex:
+            code = getattr(ex, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # For HTTP exceptions that should be redirected
+            if isinstance(ex, HTTPException):
+                frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+                if frontend_redirect_uri:
+                    error_redirect_url = f"{frontend_redirect_uri}/login?error=auth_error&error_description={ex.detail.replace(' ', '%20')}"
+                    from fastapi.responses import RedirectResponse
+                    return RedirectResponse(url=error_redirect_url)
+                else:
+                    raise ex
+
+            # For other exceptions
+            frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
+            if frontend_redirect_uri:
+                error_redirect_url = f"{frontend_redirect_uri}/login?error=server_error&error_description={'An error occurred during authentication'.replace(' ', '%20')}"
+                from fastapi.responses import RedirectResponse
+                return RedirectResponse(url=error_redirect_url)
+            else:
+                raise HTTPException(
+                    status_code=code,
+                    detail=str(ex)
+                )
+
+    # region register
     def register_user(self, request: AuthSchema.UserCreate, request_session: Request):
         try:
             errors = []
 
             email_exists = self.db.query(UserModel).filter(UserModel.email == request.email).first()
             if email_exists:
-                    errors.append(f"Email '{request.email}' already exists")
+                errors.append(f"Email '{request.email}' already exists")
             if email_exists.is_active is False:
-                    errors.append("Account not active, re-active if you want")
+                errors.append("Account not active, re-active if you want")
             username_exists = self.db.query(UserModel).filter(UserModel.username == request.username).first()
             if username_exists:
-                    errors.append(f"Username '{request.username}' already exists")
+                errors.append(f"Username '{request.username}' already exists")
 
             errors_len = len(errors)
             if errors_len > 0:
@@ -84,7 +245,7 @@ class AuthService(IAuthService):
                     message=logger_message,
                     event_source="AuthService.Register",
                     exception="NULL",
-                    user_id= int(request.email)
+                    user_id=int(request.email)
                 )
 
                 return f"Verification code sent to email {request.email}"
@@ -144,9 +305,10 @@ class AuthService(IAuthService):
                 status_code=code,
                 detail=str(ex)
             )
-    #endregion register
 
-    #region Login
+    # endregion register
+
+    # region Login
     def login(self, request: AuthSchema.LoginRequest, request_session: Request):
         try:
             errors = []
@@ -200,8 +362,8 @@ class AuthService(IAuthService):
                 self.file_and_db_handler_log.info_logger(
                     loglevel="INFO",
                     message=logger_message,
-                    event_source= "AuthService.Login",
-                    exception= "NULL",
+                    event_source="AuthService.Login",
+                    exception="NULL",
                     user_id=user_exists.id
                 )
 
@@ -218,7 +380,7 @@ class AuthService(IAuthService):
 
                 logger_message = "Login Successful. Token created"
                 self.file_and_db_handler_log.info_logger(
-                    loglevel = "INFO",
+                    loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Login",
                     exception="NULL",
@@ -248,9 +410,10 @@ class AuthService(IAuthService):
                 status_code=code,
                 detail=str(ex)
             )
-    #endregion Login
 
-    #region Verify code and otp
+    # endregion Login
+
+    # region Verify code and otp
     def registration_verify_code_and_otp(self, code: int, otp: str, request_session: Request):
         try:
             errors = []
@@ -299,7 +462,7 @@ class AuthService(IAuthService):
             self.db.refresh(register_user)
 
             token = create_jwt({
-                "id" : register_user.id,
+                "id": register_user.id,
                 "email": register_user.email,
                 "username": register_user.username,
                 "from_project": "ExpenseTracker"
@@ -387,7 +550,7 @@ class AuthService(IAuthService):
                 )
 
             token = create_jwt({
-                "id" : session_login_id,
+                "id": session_login_id,
                 "email": session_login_email,
                 "username": session_login_name,
                 "from_project": "ExpenseTracker"
@@ -402,8 +565,8 @@ class AuthService(IAuthService):
                 user_id=session_login_id
             )
             return Token(
-                access_token= token,
-                token_type= "Bearer"
+                access_token=token,
+                token_type="Bearer"
             )
 
         except Exception as ex:
@@ -426,10 +589,11 @@ class AuthService(IAuthService):
                 detail=str(ex)
             )
 
-        #endregion Verify code and otp
-    #endregion Verify code and otp
+        # endregion Verify code and otp
 
-    #region Delete , active and inactive
+    # endregion Verify code and otp
+
+    # region Delete , active and inactive
     def delete_account(self, user_id: int):
         try:
             user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
@@ -474,7 +638,7 @@ class AuthService(IAuthService):
                 detail=str(ex)
             )
 
-    def re_active_account(self, email : str, request_session: Request):
+    def re_active_account(self, email: str, request_session: Request):
         try:
             user = self.db.query(UserModel).filter(UserModel.email == email).first()
             if user is None:
@@ -608,9 +772,9 @@ class AuthService(IAuthService):
                 detail=str(ex)
             )
 
-    #endregion Delete , active and inactive
+    # endregion Delete , active and inactive
 
-    #region change password
+    # region change password
     def change_password(self, request: ChangePassword):
         try:
             user = self.db.query(UserModel).filter(UserModel.email == request.email).first()

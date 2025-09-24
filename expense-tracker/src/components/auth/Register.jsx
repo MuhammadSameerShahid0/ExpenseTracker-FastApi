@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { handleGoogleCallback } from '../utils/GoogleAuth';
 import Navbar from "../Navbar";
 import "./Auth.css";
 
@@ -28,7 +29,58 @@ const Register = () => {
   const [reactivationCode, setReactivationCode] = useState(""); // For account reactivation
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const googleAuthResult = handleGoogleCallback(location);
+    if (googleAuthResult) {
+      // Check if there's an error in the callback
+      if (googleAuthResult.error) {
+        setError(googleAuthResult.error_description || 'An error occurred during Google authentication. Please try again.');
+        return;
+      }
+      
+      // Extract user info from token
+      const token = googleAuthResult.access_token;
+      
+      // Try to verify the token and get user info using the auth context
+      const verifyTokenAndLogin = async () => {
+        try {
+          const response = await fetch('/api/verify-token', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Use the auth context to set the user and token
+            login(data.user, token);
+            // Navigate to dashboard after successful Google registration
+            navigate('/dashboard');
+          } else {
+            // Fallback user object if we can't get user info from token
+            const fallbackUser = {
+              email: 'google_user@example.com', // This would come from the token
+              username: 'Google User' // This would come from the token
+            };
+            login(fallbackUser, token);
+            // Navigate to dashboard after successful Google registration
+            navigate('/dashboard');
+          }
+        } catch (error) {
+          setError('An error occurred during Google registration. Please try again.');
+        }
+      };
+      
+      verifyTokenAndLogin();
+    }
+  }, [location, login, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -465,6 +517,47 @@ const Register = () => {
             <br />
             <button type="submit" className="btn btn-primary btn-block" disabled={isLoading}>
               {isLoading ? <div className="spinner"></div> : "Create Account"}
+            </button>
+
+            {/* Divider with "or" text */}
+            <div className="divider-or">
+              <span>or</span>
+            </div>
+
+            {/* Google Registration Button */}
+            <button 
+              type="button" 
+              className="btn btn-google btn-block"
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  setError('');
+                  const frontendRedirectUri = window.location.origin;
+                  const googleRegisterUrl = `/api/register_via_google?frontend_redirect_uri=${encodeURIComponent(frontendRedirectUri)}`;
+                  window.location.href = googleRegisterUrl;
+                } catch (err) {
+                  setError('An error occurred during Google registration. Please try again.');
+                  setIsLoading(false);
+                }
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  <span>Redirecting...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="google-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.71 17.57V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
+                    <path d="M12 23C14.97 23 17.46 22.02 19.28 20.34L15.71 17.57C14.73 18.23 13.48 18.64 12 18.64C9.14 18.64 6.71 16.69 5.84 14.09H2.18V16.91C3.99 20.5 7.7 23 12 23Z" fill="#34A853"/>
+                    <path d="M5.84 14.09C5.62 13.43 5.49 12.73 5.49 12C5.49 11.27 5.62 10.57 5.84 9.91V7.09H2.18C1.43 8.55 1 10.19 1 12C1 13.81 1.43 15.45 2.18 16.91L5.84 14.09Z" fill="#FBBC05"/>
+                    <path d="M12 5.36C13.62 5.36 15.06 5.93 16.21 7.03L19.36 3.88C17.45 2.07 14.97 1 12 1C7.7 1 3.99 3.5 2.18 7.09L5.84 9.91C6.71 7.31 9.14 5.36 12 5.36Z" fill="#EA4335"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </>
+              )}
             </button>
 
             <div className="auth-footer">

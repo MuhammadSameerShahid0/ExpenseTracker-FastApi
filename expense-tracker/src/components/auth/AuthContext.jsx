@@ -15,13 +15,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Verify token and set user
-      verifyToken(token);
+    // Check for token parameters in the URL first
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const tokenType = urlParams.get('token_type');
+    const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    
+    // If there's an error, we could handle it here or just continue to check for token
+    if (error) {
+      console.error(`Google Auth Error: ${error}`, errorDescription);
+    }
+    
+    // If there's a token in the URL parameters, process it first
+    if (accessToken && tokenType) {
+      // Store the token in localStorage
+      localStorage.setItem('token', accessToken);
+      
+      // Verify the token and set the user
+      verifyToken(accessToken);
+      
+      // Clean up the URL by removing the token parameters
+      const url = new URL(window.location);
+      url.searchParams.delete('access_token');
+      url.searchParams.delete('token_type');
+      url.searchParams.delete('error');
+      url.searchParams.delete('error_description');
+      
+      // Replace the URL without the token parameters to keep the URL clean
+      window.history.replaceState({}, document.title, url.toString());
     } else {
-      setLoading(false);
+      // Check if user is logged in on app start from localStorage
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Verify token and set user
+        verifyToken(token);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 

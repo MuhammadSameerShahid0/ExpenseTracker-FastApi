@@ -19,6 +19,14 @@ Auth_Db_DI = Depends(get_auth_service)
 def get_current_user(payload: dict = Depends(verify_jwt)):
     return payload
 
+@AuthRouter.get("/register_via_google")
+async def register(request: Request, service: IAuthService = Auth_Db_DI):
+    return await service.google_register(request)
+
+@AuthRouter.get("/callback", response_model=Token)
+async def callback(request: Request, service: IAuthService = Auth_Db_DI):
+    return await service.google_callback(request)
+
 @AuthRouter.post("/register")
 def register(request_session: Request,
              request: AuthSchema.UserCreate,

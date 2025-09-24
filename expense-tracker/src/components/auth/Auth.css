@@ -350,6 +350,135 @@ body {
   padding: 0;
 }
 
+.btn-google {
+  background-color: white;
+  color: var(--gray-800);
+  border: 1px solid var(--gray-300) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  transition: var(--transition);
+}
+
+.btn-google:hover {
+  background-color: var(--gray-100);
+  border-color: var(--gray-400);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme specific styles for Google button */
+[data-theme="dark"] .btn-google {
+  background-color: var(--gray-800);
+  color: var(--gray-200);
+  border-color: var(--gray-600) !important;
+}
+
+[data-theme="dark"] .btn-google:hover {
+  background-color: var(--gray-700);
+  border-color: var(--gray-500);
+}
+
+.google-icon {
+  margin-right: 0.5rem;
+}
+
+/* Ensure SVG paths are visible in both themes */
+.btn-google svg path {
+  transition: all 0.2s ease;
+}
+
+/* In dark mode, we'll use the default Google colors as fill values */
+[data-theme="dark"] .btn-google svg path:nth-child(1) {
+  fill: #4285F4;
+}
+
+[data-theme="dark"] .btn-google svg path:nth-child(2) {
+  fill: #34A853;
+}
+
+[data-theme="dark"] .btn-google svg path:nth-child(3) {
+  fill: #FBBC05;
+}
+
+[data-theme="dark"] .btn-google svg path:nth-child(4) {
+  fill: #EA4335;
+}
+
+/* Style for spinner inside buttons */
+.btn .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0;
+}
+
+/* Spinner for dark theme */
+[data-theme="dark"] .btn .spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+}
+
+/* Divider with "or" text */
+.divider-or {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: var(--gray-500);
+  position: relative;
+}
+
+.divider-or > span {
+  display: inline-block;
+  padding: 0 1rem;
+  background: var(--card-bg);
+  z-index: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.divider-or::before,
+.divider-or::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.divider-or::before {
+  margin-right: 1rem;
+}
+
+.divider-or::after {
+  margin-left: 1rem;
+}
+
+/* Dark theme for divider */
+[data-theme="dark"] .divider-or {
+  color: var(--gray-400);
+}
+
+[data-theme="dark"] .divider-or > span {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .divider-or::before,
+[data-theme="dark"] .divider-or::after {
+  border-bottom: 1px solid var(--gray-600);
+}
+
+/* Responsive adjustments for Google button */
+@media (max-width: 576px) {
+  .btn-google {
+    margin: 1.25rem 0;
+  }
+}
+
 .btn-link:hover {
   text-decoration: underline;
 }

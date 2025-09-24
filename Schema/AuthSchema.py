@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 class Token(BaseModel):
@@ -25,6 +27,6 @@ class LoginRequest(BaseModel):
 
 class ChangePassword(BaseModel):
     fullname: str
-    email: str
-    current_password: str
-    new_password: str
+    email: Optional[str]
+    current_password: Optional[str]
+    new_password: Optional[str]

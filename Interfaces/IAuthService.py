@@ -6,7 +6,13 @@ from typing import Union
 
 
 class IAuthService(ABC):
+    @abstractmethod
+    async def google_register(self, request: Request):
+        pass
 
+    @abstractmethod
+    async def google_callback(self, request: Request) -> Token:
+        pass
     @abstractmethod
     def register_user(self, request: AuthSchema.UserCreate, request_session: Request) ->  Union[str, UserRegisterResponse]:
         pass
