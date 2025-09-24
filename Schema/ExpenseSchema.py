@@ -31,3 +31,11 @@ class CategoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class EditExpenseList(BaseModel):
+    transaction_id: int
+    amount: float
+    category_id: int
+    description: str
+    payment_method: str
+    datetime : datetime

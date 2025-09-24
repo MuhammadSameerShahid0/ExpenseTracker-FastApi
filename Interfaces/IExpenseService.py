@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
-from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse
+from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
+
 
 class IExpenseService(ABC):
 
@@ -18,4 +19,8 @@ class IExpenseService(ABC):
 
     @abstractmethod
     def get_categories(self, user_id: int) -> List[CategoryResponse]:
+        pass
+
+    @abstractmethod
+    def edit_expense_list(self,user_id: int, request : EditExpenseList) -> str:
         pass

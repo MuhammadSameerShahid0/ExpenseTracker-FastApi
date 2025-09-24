@@ -1,11 +1,14 @@
 from typing import List
 
+from fastapi import HTTPException
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+from unicodedata import category
+
 from Interfaces.IExpenseService import IExpenseService
-from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse
+from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
 from Models.Table.Transaction import Transaction as TransactionModel
 from Models.Table.Category import Category as CategoryModel
 from Models.Table.User import User as UserModel
@@ -20,7 +23,7 @@ class ExpenseService(IExpenseService):
             CategoryModel.name == expense.category_name,
             CategoryModel.user_id == user_id
         ).first()
-        
+
         if not category:
             # Create new category if it doesn't exist
             category = CategoryModel(
@@ -31,21 +34,21 @@ class ExpenseService(IExpenseService):
             self.db.add(category)
             self.db.commit()
             self.db.refresh(category)
-        
+
         # Create the expense transaction
         db_expense = TransactionModel(
             amount=expense.amount,
             description=expense.description,
-            date=expense.date or datetime.now(),
+            date=datetime.now(),
             category_id=category.id,
             user_id=user_id,
             payment_method = expense.payment_method
         )
-        
+
         self.db.add(db_expense)
         self.db.commit()
         self.db.refresh(db_expense)
-        
+
         return ExpenseResponse(
             id=db_expense.id,
             amount=db_expense.amount,
@@ -59,7 +62,7 @@ class ExpenseService(IExpenseService):
         expenses = self.db.query(TransactionModel).filter(
             TransactionModel.user_id == user_id
         ).order_by(TransactionModel.date.desc()).offset(skip).limit(limit).all()
-        
+
         expense_responses = []
         for expense in expenses:
             category = self.db.query(CategoryModel).filter(CategoryModel.id == expense.category_id).first()
@@ -71,7 +74,7 @@ class ExpenseService(IExpenseService):
                 category_name=category.name if category else "Unknown",
                 payment_method=expense.payment_method if expense.payment_method is not None else "Unknown"
             ))
-        
+
         return expense_responses
 
     def add_category(self, category: CategoryCreate, user_id: int) -> CategoryResponse:
@@ -89,11 +92,11 @@ class ExpenseService(IExpenseService):
             type=category.type,
             user_id=user_id
         )
-        
+
         self.db.add(db_category)
         self.db.commit()
         self.db.refresh(db_category)
-        
+
         return CategoryResponse(
             id=db_category.id,
             name=db_category.name,
@@ -104,7 +107,7 @@ class ExpenseService(IExpenseService):
         categories = self.db.query(CategoryModel).filter(
             CategoryModel.user_id == user_id
         ).all()
-        
+
         return [
             CategoryResponse(
                 id=category.id,
@@ -112,3 +115,29 @@ class ExpenseService(IExpenseService):
                 type=category.type
             ) for category in categories
         ]
+
+    def edit_expense_list(self, user_id: int ,request: EditExpenseList):
+        try:
+            transaction = self.db.query(TransactionModel).filter(TransactionModel.user_id == user_id , TransactionModel.id == request.transaction_id).first()
+            if transaction is None:
+                return "No transaction found against this user"
+
+            category_model = self.db.query(CategoryModel).filter(CategoryModel.id == request.category_id).first()
+            if category_model is None:
+                return "No category found against this user"
+
+            transaction.amount = request.amount
+            transaction.category_id = category_model.id
+            transaction.description = request.description
+            transaction.payment_method = request.payment_method
+            transaction.date = request.datetime if request.datetime else datetime.now()
+
+            self.db.commit()
+            self.db.refresh(transaction)
+
+            return f"Successfully updated expense list"
+        except Exception as ex:
+            raise HTTPException(
+                status_code=500,
+                detail=str(ex)
+            )

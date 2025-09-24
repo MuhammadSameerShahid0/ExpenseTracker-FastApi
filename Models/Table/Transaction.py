@@ -11,7 +11,7 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     amount = Column(Float, nullable=False)
-    date = Column(DateTime, default=datetime.now())
+    date = Column(DateTime, default=datetime.now)
     description = Column(String(255), nullable=True)
     payment_method = Column(String(255), nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)

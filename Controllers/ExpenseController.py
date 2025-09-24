@@ -4,7 +4,7 @@ from typing import List
 
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
-from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse
+from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
 from Factory.AbstractFactory import MySqlServiceFactory
 from Interfaces.IExpenseService import IExpenseService
 
@@ -63,3 +63,10 @@ def get_categories(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@ExpenseRouter.post("/edit_expense_list")
+def edit_expense_list(request : EditExpenseList,
+        services: IExpenseService = Expense_Db_DI,
+        current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    return services.edit_expense_list(user_id, request)
