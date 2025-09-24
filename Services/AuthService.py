@@ -84,7 +84,7 @@ class AuthService(IAuthService):
                     token = create_jwt({
                         "id": user_model.id,
                         "email": user_model.email,
-                        "username": user_model.username,
+                        "username": user_model.fullname,
                         "from_project": "ExpenseTracker"
                     })
 
@@ -139,7 +139,7 @@ class AuthService(IAuthService):
                 token = create_jwt({
                     "id": user.id,
                     "email": user.email,
-                    "username": user.username,
+                    "username": user.fullname,
                     "from_project": "ExpenseTracker"
                 })
 
@@ -784,30 +784,34 @@ class AuthService(IAuthService):
                     detail="User not found"
                 )
 
-            verify_current_password = verify_password_and_hash(request.current_password, user.password_hash)
-            if not verify_current_password:
+            if request.current_password and request.new_password:
+                verify_current_password = verify_password_and_hash(request.current_password, user.password_hash)
+                if not verify_current_password:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Current password is incorrect"
+                    )
+                
+                new_password = hash_password(request.new_password)
+                user.password_hash = new_password
+            elif request.current_password or request.new_password:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Current password is incorrect"
+                    detail="Both current and new password must be provided to change password"
                 )
-            logger_message = f"Entered '{user.email}' current password is not correct"
-            self.file_and_db_handler_log.info_logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="AuthService.ChangePassword",
-                exception="NULL",
-                user_id=user.id
-            )
-
-            new_password = hash_password(request.new_password)
 
             user.fullname = request.fullname
-            user.password_hash = new_password
 
             self.db.commit()
             self.db.refresh(user)
 
-            logger_message = f"Entered '{user.email}' password changed successfully"
+            if request.current_password and request.new_password:
+                logger_message = f"Entered '{user.email}' password changed successfully"
+                result_message = f"'{user.fullname}' Your password changed successfully"
+            else:
+                logger_message = f"Profile information updated for '{user.email}'"
+                result_message = f"'{user.fullname}' Your profile updated successfully"
+            
             self.file_and_db_handler_log.info_logger(
                 loglevel="INFO",
                 message=logger_message,
@@ -815,7 +819,8 @@ class AuthService(IAuthService):
                 exception="NULL",
                 user_id=user.id
             )
-            return f"'{user.fullname}' Your password changed successfully"
+            
+            return result_message
         except Exception as ex:
             self.db.rollback()
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)

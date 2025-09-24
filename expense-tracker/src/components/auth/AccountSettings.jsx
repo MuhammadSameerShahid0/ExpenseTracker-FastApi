@@ -92,29 +92,62 @@ const AccountSettings = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const updateData = {
-        fullname: formData.fullname,
-        email: formData.email,
-        ...(formData.currentPassword && { current_password: formData.currentPassword }),
-        ...(formData.newPassword && { new_password: formData.newPassword })
-      };
       
-      const response = await fetch('/api/change-password', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
-      
-      if (response.ok) {
-        setSuccess('Profile updated successfully');
-        setIsEditing(false);
-        fetchUserProfile(token);
+      // Check if password fields are being updated
+      if (formData.currentPassword || formData.newPassword) {
+        // For password changes, send to change-password endpoint
+        const updateData = {
+          fullname: formData.fullname,
+          email: formData.email,
+          current_password: formData.currentPassword || "",
+          new_password: formData.newPassword || ""
+        };
+        
+        const response = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        if (response.ok) {
+          setSuccess('Profile and password updated successfully');
+          setIsEditing(false);
+          fetchUserProfile(token);
+        } else {
+          const data = await response.json();
+          setError(data.detail || 'Failed to update profile and password');
+        }
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Failed to update profile');
+        // For profile-only updates (no password change), we need to call a different endpoint
+        // Since there might not be a separate endpoint, let's send password fields as empty strings
+        // This might not work if the backend requires these fields, so we may need a backend change
+        const updateData = {
+          fullname: formData.fullname,
+          email: formData.email,
+          current_password: "",  // Empty for profile-only updates
+          new_password: ""      // Empty for profile-only updates
+        };
+        
+        const response = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        if (response.ok) {
+          setSuccess('Profile updated successfully');
+          setIsEditing(false);
+          fetchUserProfile(token);
+        } else {
+          const data = await response.json();
+          setError(data.detail || 'Failed to update profile');
+        }
       }
     } catch (error) {
       setError('An error occurred while updating profile');

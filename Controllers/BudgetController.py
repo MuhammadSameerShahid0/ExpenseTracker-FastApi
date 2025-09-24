@@ -23,9 +23,9 @@ def get_current_user(payload: dict = Depends(verify_jwt)):
 def add_budget(
     limit: float = Body(...),
     category_id: int = Body(...),
-    services: IBudgetService = Budget_Db_DI
-):
-    user_id = 5
+    services: IBudgetService = Budget_Db_DI,
+    current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     return services.add_budget(user_id, limit, category_id)
 
 @BudgetRouter.get("/budgets")
