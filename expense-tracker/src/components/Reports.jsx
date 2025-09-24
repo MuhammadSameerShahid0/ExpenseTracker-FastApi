@@ -247,7 +247,6 @@ const Reports = () => {
                 >
                   <option value="all">All Categories</option>
                   {categories
-                    .filter(cat => cat.type === 'expense')
                     .map(category => (
                       <option key={category.id} value={category.name}>
                         {category.name}

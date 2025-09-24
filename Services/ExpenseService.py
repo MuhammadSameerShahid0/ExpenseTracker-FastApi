@@ -5,6 +5,7 @@ from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+from starlette import status
 from unicodedata import category
 
 from Interfaces.IExpenseService import IExpenseService
@@ -118,13 +119,25 @@ class ExpenseService(IExpenseService):
 
     def edit_expense_list(self, user_id: int ,request: EditExpenseList):
         try:
+            if request.datetime > datetime.now():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You can't add the future expense, correct the date"
+                )
+
             transaction = self.db.query(TransactionModel).filter(TransactionModel.user_id == user_id , TransactionModel.id == request.transaction_id).first()
             if transaction is None:
-                return "No transaction found against this user"
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No transaction found against this user"
+                )
 
             category_model = self.db.query(CategoryModel).filter(CategoryModel.id == request.category_id).first()
             if category_model is None:
-                return "No category found against this user"
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No category found against this user"
+                )
 
             transaction.amount = request.amount
             transaction.category_id = category_model.id
@@ -137,7 +150,11 @@ class ExpenseService(IExpenseService):
 
             return f"Successfully updated expense list"
         except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
             raise HTTPException(
-                status_code=500,
+                status_code=code,
                 detail=str(ex)
             )
