@@ -33,7 +33,7 @@ class AuthService(IAuthService):
 
             if not redirect_uri:
                 logger_message = "Google register failed: Redirect URI not configured"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="ERROR",
                     message=logger_message,
                     event_source="AuthService.GoogleRegister",
@@ -48,7 +48,7 @@ class AuthService(IAuthService):
             request.session["frontend_redirect_uri"] = frontend_redirect_uri
 
             logger_message = f"Google register initiated, redirect URI: {redirect_uri}"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.GoogleRegister",
@@ -61,7 +61,7 @@ class AuthService(IAuthService):
             code = getattr(ex, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 logger_message = f"Google register failed: {str(ex.detail)}"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="ERROR",
                     message=logger_message,
                     event_source="AuthService.GoogleRegister",
@@ -71,7 +71,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong during Google register"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.GoogleRegister",
@@ -103,7 +103,7 @@ class AuthService(IAuthService):
                 if user_model.google_id is not None:
                     if user_model.is_active is False:
                         logger_message = "Credentials verified, But account not active"
-                        self.file_and_db_handler_log.info_logger(
+                        self.file_and_db_handler_log.logger(
                             loglevel="INFO",
                             message=logger_message,
                             event_source="AuthService.Login",
@@ -126,7 +126,7 @@ class AuthService(IAuthService):
                     frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
                     if frontend_redirect_uri:
                         logger_message = "Google Login Successful"
-                        self.file_and_db_handler_log.info_logger(
+                        self.file_and_db_handler_log.logger(
                             loglevel="INFO",
                             message=logger_message,
                             event_source="AuthService.Login",
@@ -253,7 +253,7 @@ class AuthService(IAuthService):
                 )
 
                 logger_message = f"verification code {code} sent to email"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Register",
@@ -276,7 +276,7 @@ class AuthService(IAuthService):
                 }
 
                 logger_message = f"Security Enabled '{request.email}', Added in db after verification"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Register",
@@ -316,7 +316,7 @@ class AuthService(IAuthService):
                 )
 
                 logger_message = f"Account Registered Successfully '{request.email}' Security Disabled"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Register",
@@ -330,7 +330,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something Went Wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.Register",
@@ -361,7 +361,7 @@ class AuthService(IAuthService):
 
             if user_exists.is_active is False:
                 logger_message = "Credentials verified, But account not active"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Login",
@@ -396,7 +396,7 @@ class AuthService(IAuthService):
                 request_session.session["id"] = user_exists.id
 
                 logger_message = "Credentials verified, Email code and authenticator otp required"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Login",
@@ -416,7 +416,7 @@ class AuthService(IAuthService):
                 })
 
                 logger_message = "Login Successful. Token created"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.Login",
@@ -435,7 +435,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something Went Wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.Login",
@@ -462,7 +462,7 @@ class AuthService(IAuthService):
             verif_top = pyotp.TOTP(session_secret_2fa)
             if not verif_top.verify(otp):
                 logger_message = "Enter authenticator OTP invalid"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.RegisterCodeAndOTP",
@@ -477,7 +477,7 @@ class AuthService(IAuthService):
 
             if str(session_email_code).strip() != str(code).strip():
                 logger_message = "Entered Email Code is invalid"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.RegisterCodeAndOTP",
@@ -515,7 +515,7 @@ class AuthService(IAuthService):
             )
 
             logger_message = f"'{register_user.email}' Account Created Successfully"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.RegisterCodeAndOTP",
@@ -529,7 +529,7 @@ class AuthService(IAuthService):
             self.db.rollback()
 
             logger_message = "Something Went Wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.RegisterCodeAndOTP",
@@ -559,7 +559,7 @@ class AuthService(IAuthService):
             verif_top = pyotp.TOTP(session_secret_2fa)
             if not verif_top.verify(otp):
                 logger_message = "Entered authenticator Code is invalid"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.LoginCodeAndOTP",
@@ -570,7 +570,7 @@ class AuthService(IAuthService):
 
             if str(session_email_code).strip() != str(code).strip():
                 logger_message = "Entered Email Code is invalid"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.LoginCodeAndOTP",
@@ -594,7 +594,7 @@ class AuthService(IAuthService):
             })
 
             logger_message = "Security Code's verified, Login Successful"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.LoginCodeAndOTP",
@@ -613,7 +613,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.LoginCodeAndOTP",
@@ -646,7 +646,7 @@ class AuthService(IAuthService):
             self.db.refresh(user)
 
             logger_message = "Account Deleted Successfully"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.DeleteAccount",
@@ -662,7 +662,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.DeleteAccount",
@@ -700,7 +700,7 @@ class AuthService(IAuthService):
                 body
             )
             logger_message = f"Re-active code '{code}' sent to Email"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.ReActiveAccount",
@@ -713,7 +713,7 @@ class AuthService(IAuthService):
             request_session.session["id"] = user.id
 
             logger_message = "Re-active Account request received and code sent to Email"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.ReActiveAccount",
@@ -727,7 +727,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.ReActiveAccount",
@@ -749,7 +749,7 @@ class AuthService(IAuthService):
 
             if str(session_email_code).strip() != str(code).strip():
                 logger_message = f"Entered code '{code}' is invalid"
-                self.file_and_db_handler_log.info_logger(
+                self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="AuthService.ReActiveAccountVerificationCode",
@@ -779,7 +779,7 @@ class AuthService(IAuthService):
             })
 
             logger_message = f"Re-active code '{code}' successful, Account activated"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.ReActiveAccountVerificationCode",
@@ -797,7 +797,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.ReActiveAccountVerificationCode",
@@ -829,7 +829,7 @@ class AuthService(IAuthService):
                     self.db.refresh(user)
                     logger_message = f"Entered '{user.email}' password changed successfully"
                     result_message = f"'{user.fullname}' Your password changed successfully"
-                    self.file_and_db_handler_log.info_logger(
+                    self.file_and_db_handler_log.logger(
                         loglevel="INFO",
                         message=logger_message,
                         event_source="AuthService.ChangePassword",
@@ -866,7 +866,7 @@ class AuthService(IAuthService):
                 logger_message = f"Profile information updated for '{user.email}'"
                 result_message = f"'{user.fullname}' Your profile updated successfully"
             
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AuthService.ChangePassword",
@@ -882,7 +882,7 @@ class AuthService(IAuthService):
                 raise ex
 
             logger_message = "Something went wrong, got an error"
-            self.file_and_db_handler_log.info_logger(
+            self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AuthService.ChangePassword",

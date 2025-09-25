@@ -17,7 +17,7 @@ class FileandDbHandlerLog:
     def __init__(self, db : Session):
         self.db = db
 
-    def info_logger(self, loglevel: str, message: str, event_source: str, exception : str,user_id: int = None):
+    def logger(self, loglevel: str, message: str, event_source: str, exception : str, user_id: int = None):
         final_user_id = user_id
         if final_user_id is None:
             final_user_id = get_id_from_token()
