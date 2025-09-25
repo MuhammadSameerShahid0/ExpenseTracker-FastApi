@@ -264,7 +264,7 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay blurred" onClick={onClose}>
       <div className="budget-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Budget Management</h2>
@@ -437,7 +437,7 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
       
       {/* Edit Budget Modal */}
       {showEditModal && editingBudget && (
-        <div className="edit-budget-modal-overlay" onClick={handleCancelEdit}>
+        <div className="edit-budget-modal-overlay blurred" onClick={handleCancelEdit}>
           <div className="edit-budget-modal" onClick={(e) => e.stopPropagation()}>
             <div className="edit-budget-header">
               <h3>Edit Budget</h3>
@@ -514,7 +514,7 @@ const BudgetModal = ({ isOpen, onClose, initialTab = 'add' }) => {
       
       {/* Delete Budget Confirmation Modal */}
       {showDeleteModal && budgetToDelete && (
-        <div className="delete-budget-modal-overlay" onClick={handleCancelDelete}>
+        <div className="delete-budget-modal-overlay blurred" onClick={handleCancelDelete}>
           <div className="delete-budget-modal" onClick={(e) => e.stopPropagation()}>
             <div className="delete-budget-header">
               <h3>Confirm Delete</h3>

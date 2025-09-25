@@ -16,19 +16,21 @@ class BudgetService(IBudgetService):
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
     def add_budget(self, user_id: int, amount: float, category_id: int):
+        global check_category
         try:
             errors = []
             current_month = datetime.now().month
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
                                                             BudgetModel.category_id == category_id).first()
-            if user_budget is not None:
-                if user_budget.month <= str(current_month):
-                    errors.append(f"This category budget for this month already set")
 
             check_category = self.db.query(CategoryModel).filter(CategoryModel.id == category_id,
                                                                  CategoryModel.user_id == user_id).first()
             if check_category is None:
                 errors.append("Category does not exist. You need to create it first")
+
+            if user_budget is not None:
+                if user_budget.month <= str(current_month):
+                    errors.append(f"This category '{check_category.name}' budget for this month already set")
 
             error_len = len(errors)
             if error_len > 0:
@@ -59,7 +61,7 @@ class BudgetService(IBudgetService):
 
             return f"Budget '{amount}' set with category '{check_category.name}' created successfully"
         except Exception as ex:
-            logger_message = f"Error setting budget, category {category_id}, amount {amount}"
+            logger_message = f"Error setting budget, category {check_category.name} already set for this month"
             self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,

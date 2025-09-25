@@ -647,3 +647,11 @@
   color: white;
   border-color: var(--primary-color);
 }
+
+/* Blurred Modal Overlay */
+.modal-overlay.blurred,
+.edit-budget-modal-overlay.blurred,
+.delete-budget-modal-overlay.blurred {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
