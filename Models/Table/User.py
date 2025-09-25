@@ -10,6 +10,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    google_id = Column(String, unique=True,  nullable=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     fullname = Column(String(50), nullable=False)
     email = Column(String(255), unique=True, index=True, nullable=False)

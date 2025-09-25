@@ -66,7 +66,7 @@ class AuthService(IAuthService):
             user_info = token["userinfo"]
             user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
             if user_model is not None:
-                if user_model.password_hash == "Register with google":
+                if user_model.google_id is not None:
                     if user_model.is_active is False:
                         logger_message = "Credentials verified, But account not active"
                         self.file_and_db_handler_log.info_logger(
@@ -122,6 +122,7 @@ class AuthService(IAuthService):
             else:
                 # New user registration
                 user = UserModel(
+                    google_id=user_info['sub'],
                     username=user_info['name'],
                     fullname=user_info['name'],
                     email=user_info['email'],
@@ -231,6 +232,7 @@ class AuthService(IAuthService):
                 request_session.session["2FA Secret"] = secret
 
                 request_session.session["User Model"] = {
+                    "google_id" : "NULL",
                     "username": request.username,
                     "fullname": request.fullname,
                     "email": request.email,
@@ -251,6 +253,7 @@ class AuthService(IAuthService):
                 return f"Verification code sent to email {request.email}"
             else:
                 register_user = UserModel(
+                    google_id=None,
                     username=request.username,
                     fullname=request.fullname,
                     email=request.email,
@@ -783,6 +786,23 @@ class AuthService(IAuthService):
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found"
                 )
+
+            if user.google_id is not None and user.password_hash == "Register with google":
+                if request.new_password:
+                    new_password = hash_password(request.new_password)
+                    user.password_hash = new_password
+                    self.db.commit()
+                    self.db.refresh(user)
+                    logger_message = f"Entered '{user.email}' password changed successfully"
+                    result_message = f"'{user.fullname}' Your password changed successfully"
+                    self.file_and_db_handler_log.info_logger(
+                        loglevel="INFO",
+                        message=logger_message,
+                        event_source="AuthService.ChangePassword",
+                        exception="NULL",
+                        user_id=user.id
+                    )
+                    return result_message
 
             if request.current_password and request.new_password:
                 verify_current_password = verify_password_and_hash(request.current_password, user.password_hash)
