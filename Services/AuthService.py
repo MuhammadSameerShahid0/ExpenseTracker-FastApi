@@ -46,16 +46,6 @@ class AuthService(IAuthService):
                 )
             
             request.session["frontend_redirect_uri"] = frontend_redirect_uri
-
-            logger_message = f"Google register initiated, redirect URI: {redirect_uri}"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="AuthService.GoogleRegister",
-                exception="NULL",
-                user_id=None
-            )
-
             return await google_oauth.google.authorize_redirect(request, redirect_uri)
         except Exception as ex:
             code = getattr(ex, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)

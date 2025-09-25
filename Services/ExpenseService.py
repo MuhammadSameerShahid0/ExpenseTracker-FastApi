@@ -13,113 +13,220 @@ from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate,
 from Models.Table.Transaction import Transaction as TransactionModel
 from Models.Table.Category import Category as CategoryModel
 from Models.Table.User import User as UserModel
+from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
 
 class ExpenseService(IExpenseService):
     def __init__(self, db: Session):
         self.db = db
+        self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
     def add_expense(self, expense: ExpenseCreate, user_id: int) -> ExpenseResponse:
-        # Check if category exists or create it
-        category = self.db.query(CategoryModel).filter(
-            CategoryModel.name == expense.category_name,
-            CategoryModel.user_id == user_id
-        ).first()
+        try:
+            category = self.db.query(CategoryModel).filter(
+                CategoryModel.name == expense.category_name,
+                CategoryModel.user_id == user_id
+            ).first()
 
-        if not category:
-            # Create new category if it doesn't exist
-            category = CategoryModel(
-                name=expense.category_name,
-                type="expense",
-                user_id=user_id
-            )
-            self.db.add(category)
-            self.db.commit()
-            self.db.refresh(category)
+            if not category:
+                category = CategoryModel(
+                    name=expense.category_name,
+                    type="expense",
+                    user_id=user_id
+                )
+                self.db.add(category)
+                self.db.commit()
+                self.db.refresh(category)
 
-        # Create the expense transaction
-        db_expense = TransactionModel(
-            amount=expense.amount,
-            description=expense.description,
-            date=datetime.now(),
-            category_id=category.id,
-            user_id=user_id,
-            payment_method = expense.payment_method
-        )
+                logger_message = f"New category '{expense.category_name}' created for expense"
+                self.file_and_db_handler_log.logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="ExpenseService.AddExpense",
+                    exception="NULL",
+                    user_id=user_id
+                )
 
-        self.db.add(db_expense)
-        self.db.commit()
-        self.db.refresh(db_expense)
-
-        return ExpenseResponse(
-            id=db_expense.id,
-            amount=db_expense.amount,
-            description=db_expense.description,
-            date=db_expense.date,
-            category_name=category.name,
-            payment_method=db_expense.payment_method
-        )
-
-    def get_expenses(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ExpenseResponse]:
-        expenses = self.db.query(TransactionModel).filter(
-            TransactionModel.user_id == user_id
-        ).order_by(TransactionModel.date.desc()).offset(skip).limit(limit).all()
-
-        expense_responses = []
-        for expense in expenses:
-            category = self.db.query(CategoryModel).filter(CategoryModel.id == expense.category_id).first()
-            expense_responses.append(ExpenseResponse(
-                id=expense.id,
+            # Create the expense transaction
+            db_expense = TransactionModel(
                 amount=expense.amount,
                 description=expense.description,
-                date=expense.date,
-                category_name=category.name if category else "Unknown",
-                payment_method=expense.payment_method if expense.payment_method is not None else "Unknown"
-            ))
+                date=datetime.now(),
+                category_id=category.id,
+                user_id=user_id,
+                payment_method = expense.payment_method
+            )
 
-        return expense_responses
+            self.db.add(db_expense)
+            self.db.commit()
+            self.db.refresh(db_expense)
+
+            logger_message = f"Expense of {expense.amount} added with description: {expense.description}"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.AddExpense",
+                exception="NULL",
+                user_id=user_id
+            )
+
+            return ExpenseResponse(
+                id=db_expense.id,
+                amount=db_expense.amount,
+                description=db_expense.description,
+                date=db_expense.date,
+                category_name=category.name,
+                payment_method=db_expense.payment_method
+            )
+        except Exception as ex:
+            logger_message = f"Error adding expense with amount {expense.amount}"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.AddExpense",
+                exception=str(ex),
+                user_id=user_id
+            )
+            raise ex
+
+    def get_expenses(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ExpenseResponse]:
+        try:
+            expenses = self.db.query(TransactionModel).filter(
+                TransactionModel.user_id == user_id
+            ).order_by(TransactionModel.date.desc()).offset(skip).limit(limit).all()
+
+            expense_responses = []
+            for expense in expenses:
+                category = self.db.query(CategoryModel).filter(CategoryModel.id == expense.category_id).first()
+                expense_responses.append(ExpenseResponse(
+                    id=expense.id,
+                    amount=expense.amount,
+                    description=expense.description,
+                    date=expense.date,
+                    category_name=category.name if category else "Unknown",
+                    payment_method=expense.payment_method if expense.payment_method is not None else "Unknown"
+                ))
+
+            logger_message = f"Retrieved {len(expense_responses)} expenses, skip: {skip}, limit: {limit}"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.GetExpenses",
+                exception="NULL",
+                user_id=user_id
+            )
+
+            return expense_responses
+        except Exception as ex:
+            logger_message = f"Error retrieving expenses, skip: {skip}, limit: {limit}"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.GetExpenses",
+                exception=str(ex),
+                user_id=user_id
+            )
+            raise ex
 
     def add_category(self, category: CategoryCreate, user_id: int) -> CategoryResponse:
-        # Check if category already exists
-        existing_category = self.db.query(CategoryModel).filter(
-            CategoryModel.name == category.name,
-            CategoryModel.user_id == user_id
-        ).first()
+        try:
+            # Check if category already exists
+            existing_category = self.db.query(CategoryModel).filter(
+                CategoryModel.name == category.name,
+                CategoryModel.user_id == user_id
+            ).first()
 
-        if existing_category:
-            raise Exception("Category already exists")
+            if existing_category:
+                logger_message = f"Attempt to add duplicate category '{category.name}'"
+                self.file_and_db_handler_log.logger(
+                    loglevel="WARNING",
+                    message=logger_message,
+                    event_source="ExpenseService.AddCategory",
+                    exception="Category already exists",
+                    user_id=user_id
+                )
+                raise Exception("Category already exists")
 
-        db_category = CategoryModel(
-            name=category.name,
-            type=category.type,
-            user_id=user_id
-        )
+            db_category = CategoryModel(
+                name=category.name,
+                type=category.type,
+                user_id=user_id
+            )
 
-        self.db.add(db_category)
-        self.db.commit()
-        self.db.refresh(db_category)
+            self.db.add(db_category)
+            self.db.commit()
+            self.db.refresh(db_category)
 
-        return CategoryResponse(
-            id=db_category.id,
-            name=db_category.name,
-            type=db_category.type
-        )
+            logger_message = f"Category '{category.name}' added successfully"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.AddCategory",
+                exception="NULL",
+                user_id=user_id
+            )
+
+            return CategoryResponse(
+                id=db_category.id,
+                name=db_category.name,
+                type=db_category.type
+            )
+        except Exception as ex:
+            logger_message = f"Error adding category '{category.name}'"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.AddCategory",
+                exception=str(ex),
+                user_id=user_id
+            )
+            raise ex
 
     def get_categories(self, user_id: int) -> List[CategoryResponse]:
-        categories = self.db.query(CategoryModel).filter(
-            CategoryModel.user_id == user_id
-        ).all()
+        try:
+            categories = self.db.query(CategoryModel).filter(
+                CategoryModel.user_id == user_id
+            ).all()
 
-        return [
-            CategoryResponse(
-                id=category.id,
-                name=category.name,
-                type=category.type
-            ) for category in categories
-        ]
+            result = [
+                CategoryResponse(
+                    id=category.id,
+                    name=category.name,
+                    type=category.type
+                ) for category in categories
+            ]
+            
+            logger_message = f"Retrieved {len(result)} categories"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.GetCategories",
+                exception="NULL",
+                user_id=user_id
+            )
+
+            return result
+        except Exception as ex:
+            logger_message = f"Error retrieving categories"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.GetCategories",
+                exception=str(ex),
+                user_id=user_id
+            )
+            raise ex
 
     def edit_expense_list(self, user_id: int ,request: EditExpenseList):
         try:
             if request.datetime > datetime.now():
+                logger_message = f"Attempt to edit expense with future date by user"
+                self.file_and_db_handler_log.logger(
+                    loglevel="WARNING",
+                    message=logger_message,
+                    event_source="ExpenseService.EditExpenseList",
+                    exception="Future date not allowed",
+                    user_id=user_id
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="You can't add the future expense, correct the date"
@@ -127,6 +234,14 @@ class ExpenseService(IExpenseService):
 
             transaction = self.db.query(TransactionModel).filter(TransactionModel.user_id == user_id , TransactionModel.id == request.transaction_id).first()
             if transaction is None:
+                logger_message = f"No transaction found for user {user_id} and transaction id {request.transaction_id}"
+                self.file_and_db_handler_log.logger(
+                    loglevel="WARNING",
+                    message=logger_message,
+                    event_source="ExpenseService.EditExpenseList",
+                    exception="No transaction found",
+                    user_id=user_id
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="No transaction found against this user"
@@ -134,6 +249,14 @@ class ExpenseService(IExpenseService):
 
             category_model = self.db.query(CategoryModel).filter(CategoryModel.id == request.category_id).first()
             if category_model is None:
+                logger_message = f"No category found for category id {request.category_id}"
+                self.file_and_db_handler_log.logger(
+                    loglevel="WARNING",
+                    message=logger_message,
+                    event_source="ExpenseService.EditExpenseList",
+                    exception="No category found",
+                    user_id=user_id
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="No category found against this user"
@@ -148,8 +271,25 @@ class ExpenseService(IExpenseService):
             self.db.commit()
             self.db.refresh(transaction)
 
+            logger_message = f"Expense list updated successfully for transaction {request.transaction_id}"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.EditExpenseList",
+                exception="NULL",
+                user_id=user_id
+            )
+
             return f"Successfully updated expense list"
         except Exception as ex:
+            logger_message = f"Error editing expense list, transaction id {request.transaction_id}"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.EditExpenseList",
+                exception=str(ex),
+                user_id=user_id
+            )
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
