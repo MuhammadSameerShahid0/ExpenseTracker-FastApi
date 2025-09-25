@@ -168,6 +168,15 @@ class AuthService(IAuthService):
                     "from_project": "ExpenseTracker"
                 })
 
+                logger_message = "Google Register Successful"
+                self.file_and_db_handler_log.logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="AuthService.Register",
+                    exception="NULL",
+                    user_id=user.id
+                )
+
                 # Redirect to frontend with token
                 frontend_redirect_uri = request.session.get("frontend_redirect_uri", "")
                 if frontend_redirect_uri:
@@ -859,7 +868,7 @@ class AuthService(IAuthService):
             self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
-                event_source="AuthService.ChangePassword",
+                event_source="AuthService.UpdateProfile",
                 exception="NULL",
                 user_id=user.id
             )

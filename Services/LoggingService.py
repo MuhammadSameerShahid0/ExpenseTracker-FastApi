@@ -37,7 +37,13 @@ class LoggingService(ILoggingService):
                 LoggingModel.event_source.startswith("ExpenseService.AddCategory"),
                 LoggingModel.event_source.startswith("BudgetService.AddBudget"),
                 LoggingModel.event_source.startswith("BudgetService.DeleteSetBudget"),
-                )
+                LoggingModel.event_source.startswith("AuthService.Register"),
+                LoggingModel.event_source.startswith("AuthService.ChangePassword"),
+                LoggingModel.event_source.startswith("AuthService.UpdateProfile"),
+                LoggingModel.event_source.startswith("ExpenseService.EditExpenseList"),
+                LoggingModel.event_source.startswith("BudgetService.EditBudgetAmount"),
+                LoggingModel.event_source.startswith("ExpenseService.AddExpense")
+            )
             ).all()
                        )
 

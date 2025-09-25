@@ -164,12 +164,17 @@ class BudgetService(IBudgetService):
         try:
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
                                                             BudgetModel.category_id == category_id).first()
+
+            category_model = self.db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
+            if category_model is None:
+                raise HTTPException(status_code=404, detail="Category not found")
+
             if user_budget is not None:
                 user_budget.limit_amount = amount
                 self.db.commit()
                 self.db.refresh(user_budget)
 
-                logger_message = f"Budget amount updated to {amount} for category {category_id}"
+                logger_message = f"Budget amount updated to {amount} for category {category_model.name}"
                 self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
@@ -180,7 +185,7 @@ class BudgetService(IBudgetService):
 
                 return "Successfully updated budget amount"
             else:
-                logger_message = f"Failed to update budget amount for category {category_id}"
+                logger_message = f"Failed to update budget amount for category {category_model.name}"
                 self.file_and_db_handler_log.logger(
                     loglevel="WARNING",
                     message=logger_message,
@@ -190,7 +195,7 @@ class BudgetService(IBudgetService):
                 )
                 return "Failed to update budget amount"
         except Exception as ex:
-            logger_message = f"Error updating budget amount for category {category_id} to {amount}"
+            logger_message = f"Error updating budget amount for category to {amount}"
             self.file_and_db_handler_log.logger(
                 loglevel="ERROR",
                 message=logger_message,

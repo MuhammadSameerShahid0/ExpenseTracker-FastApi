@@ -271,7 +271,7 @@ class ExpenseService(IExpenseService):
             self.db.commit()
             self.db.refresh(transaction)
 
-            logger_message = f"Expense list updated successfully for transaction {request.transaction_id}"
+            logger_message = f"Expense list updated successfully for category {category_model.name}"
             self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
