@@ -32,18 +32,52 @@ class AuthService(IAuthService):
                 redirect_uri = f"{frontend_redirect_uri}/api/callback"
 
             if not redirect_uri:
+                logger_message = "Google register failed: Redirect URI not configured"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="ERROR",
+                    message=logger_message,
+                    event_source="AuthService.GoogleRegister",
+                    exception="Redirect URI not configured",
+                    user_id=None
+                )
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Redirect URI not configured"
                 )
+            
             request.session["frontend_redirect_uri"] = frontend_redirect_uri
+
+            logger_message = f"Google register initiated, redirect URI: {redirect_uri}"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.GoogleRegister",
+                exception="NULL",
+                user_id=None
+            )
 
             return await google_oauth.google.authorize_redirect(request, redirect_uri)
         except Exception as ex:
             code = getattr(ex, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
+                logger_message = f"Google register failed: {str(ex.detail)}"
+                self.file_and_db_handler_log.info_logger(
+                    loglevel="ERROR",
+                    message=logger_message,
+                    event_source="AuthService.GoogleRegister",
+                    exception=str(ex.detail),
+                    user_id=None
+                )
                 raise ex
 
+            logger_message = "Something went wrong during Google register"
+            self.file_and_db_handler_log.info_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="AuthService.GoogleRegister",
+                exception=str(ex),
+                user_id=None
+            )
             raise HTTPException(
                 status_code=code,
                 detail=str(ex)
