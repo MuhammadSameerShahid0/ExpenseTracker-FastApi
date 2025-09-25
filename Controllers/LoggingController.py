@@ -29,10 +29,11 @@ def auth_logging(services: ILoggingService = logging_Db_DI,
         raise HTTPException(status_code=404, detail=str(e))
 
 @LoggingRouter.get("/return_selected_logging")
-def auth_logging(services: ILoggingService = logging_Db_DI):
+def auth_logging(services: ILoggingService = logging_Db_DI,
+                 current_user: dict = Depends(get_current_user)):
     try:
-        email = "s@gmail.com" #current_user["email"]
-        user_id = 15 #current_user["id"]
+        email = current_user["email"]
+        user_id =current_user["id"]
         return services.return_selected_logging(user_id, email)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -19,6 +19,9 @@ const AccountSettings = () => {
   const [secretKey, setSecretKey] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportData, setExportData] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
@@ -316,6 +319,196 @@ const AccountSettings = () => {
       setError('An error occurred while fetching login history');
     } finally {
       setIsFetchingHistory(false);
+    }
+  };
+
+  const fetchSelectedLogging = async () => {
+    try {
+      setIsExporting(true);
+      setError('');
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/return_selected_logging', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setExportData(data);
+        setShowExportModal(true);
+      } else {
+        setError(data.detail || 'Failed to fetch logging data');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching logging data');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const generatePDF = async () => {
+    if (!exportData || exportData.length === 0) {
+      setError('No data to export');
+      return;
+    }
+
+    try {
+      const jsPDF = (await import('jspdf')).jsPDF;
+      const autoTable = (await import('jspdf-autotable')).default;
+      
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Account History Data', 14, 20);
+      
+      // Add user info with styling
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(66, 66, 66); // Gray color
+      
+      // Draw a styled box for user info
+      doc.setDrawColor(59, 130, 246); // Blue border
+      doc.setFillColor(239, 246, 255); // Light blue background
+      doc.rect(12, 26, 186, 18, 'FD'); // Filled rectangle with border
+      
+      // Add user info text inside the box
+      doc.setTextColor(25, 25, 25); // Dark color for text
+      doc.text(`User: ${user?.fullname || user?.email || 'N/A'}`, 18, 34);
+      doc.text(`Email: ${user?.email || 'N/A'}`, 100, 34);
+      
+      // Reset font and color
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      
+      // Add generation date
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 48);
+      
+      // Prepare data for table
+      const tableColumn = ['Source', 'Email', 'Message', 'IP Address', 'Date & Time'];
+      const tableRows = exportData.map(log => [
+        log.source || '',
+        log.email || '',
+        log.message || '',
+        log.ip_address || '',
+        new Date(log.datetime).toLocaleString()
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 54,
+        styles: {
+          fontSize: 9,
+          cellPadding: 4
+        },
+        headStyles: {
+          fillColor: [59, 130, 246], // blue-500
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [243, 244, 246] // gray-100
+        }
+      });
+      
+      // Open PDF in new tab for preview
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+      
+      setSuccess('PDF preview opened in new tab!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      setError('Failed to generate PDF. Please try again.');
+    }
+  };
+
+  const downloadPDF = async () => {
+    if (!exportData || exportData.length === 0) {
+      setError('No data to export');
+      return;
+    }
+
+    try {
+      const jsPDF = (await import('jspdf')).jsPDF;
+      const autoTable = (await import('jspdf-autotable')).default;
+      
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Account History Data', 14, 20);
+      
+      // Add user info with styling
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(66, 66, 66); // Gray color
+      
+      // Draw a styled box for user info
+      doc.setDrawColor(59, 130, 246); // Blue border
+      doc.setFillColor(239, 246, 255); // Light blue background
+      doc.rect(12, 26, 186, 18, 'FD'); // Filled rectangle with border
+      
+      // Add user info text inside the box
+      doc.setTextColor(25, 25, 25); // Dark color for text
+      doc.text(`User: ${user?.fullname || user?.email || 'N/A'}`, 18, 34);
+      doc.text(`Email: ${user?.email || 'N/A'}`, 100, 34);
+      
+      // Reset font and color
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      
+      // Add generation date
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 48);
+      
+      // Prepare data for table
+      const tableColumn = ['Source', 'Email', 'Message', 'IP Address', 'Date & Time'];
+      const tableRows = exportData.map(log => [
+        log.source || '',
+        log.email || '',
+        log.message || '',
+        log.ip_address || '',
+        new Date(log.datetime).toLocaleString()
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 54,
+        styles: {
+          fontSize: 9,
+          cellPadding: 4
+        },
+        headStyles: {
+          fillColor: [59, 130, 246], // blue-500
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [243, 244, 246] // gray-100
+        }
+      });
+      
+      // Save the PDF
+      doc.save('ExpenseTracker-history-data.pdf');
+      setSuccess('PDF downloaded successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      setError('Failed to generate PDF. Please try again.');
     }
   };
 
@@ -720,11 +913,22 @@ const AccountSettings = () => {
                     </div>
                     <div>
                       <h3>Export Data</h3>
-                      <p>Download a copy of your expense data</p>
+                      <p>Download a copy of your account history data</p>
                     </div>
                   </div>
-                  <button className="btn btn-outline">
-                    Export
+                  <button 
+                    className="btn btn-outline"
+                    onClick={fetchSelectedLogging}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <>
+                        <div className="spinner-small"></div>
+                        Exporting...
+                      </>
+                    ) : (
+                      'Export'
+                    )}
                   </button>
                 </div>
                 
@@ -837,6 +1041,64 @@ const AccountSettings = () => {
               <button 
                 className="btn btn-primary"
                 onClick={() => setShowLoginHistoryModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showExportModal && (
+        <div className="modal-overlay blurred" onClick={() => setShowExportModal(false)}>
+          <div className="modal-content export-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Export Data</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowExportModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="export-options">
+                <div className="export-option">
+                  <div className="export-icon">
+                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4>Preview as PDF</h4>
+                  <p>Preview your data in PDF format</p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={generatePDF}
+                  >
+                    Preview PDF
+                  </button>
+                </div>
+                <div className="export-option">
+                  <div className="export-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M16 8L12 12M12 12L8 8M12 12V3" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <h4>Download as PDF</h4>
+                  <p>Save your data as a PDF file</p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={downloadPDF}
+                  >
+                    Download PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn btn-outline"
+                onClick={() => setShowExportModal(false)}
               >
                 Close
               </button>
