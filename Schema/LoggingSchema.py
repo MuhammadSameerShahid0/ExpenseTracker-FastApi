@@ -6,3 +6,10 @@ class GetUserAuthLogsResponse(BaseModel):
     message: str
     ip_address: str
     datetime: datetime
+
+class SelectedLogging(BaseModel):
+    source : str
+    email: str
+    message: str
+    ip_address: str
+    datetime: datetime
