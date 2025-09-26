@@ -73,6 +73,7 @@ def edit_expense_list(request : EditExpenseList,
 
 @ExpenseRouter.delete("/delete_expense_list_item")
 def delete_expense_list_item(transaction_id: int,
-        services: IExpenseService = Expense_Db_DI):
-    user_id =  5 #current_user["id"]
+        services: IExpenseService = Expense_Db_DI,
+        current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     return services.delete_expense_list_item(user_id, transaction_id)
