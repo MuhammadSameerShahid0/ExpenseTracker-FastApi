@@ -1,4 +1,8 @@
-const API_BASE_URL = ''; // Using relative path to match your existing API calls
+// Determine the API base URL based on the environment
+const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:8000'  // Local development backend
+  : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
 
 export const budgetService = {
   // Add a new budget

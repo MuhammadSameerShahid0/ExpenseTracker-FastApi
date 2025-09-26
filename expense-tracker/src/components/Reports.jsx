@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import './Dashboard.css';
 import './Reports.css';
-import { useAuth } from './auth/AuthContext';
 
 const Reports = () => {
   const [expenses, setExpenses] = useState([]);
@@ -39,7 +37,13 @@ const Reports = () => {
 
   const fetchExpenses = async (token) => {
     try {
-      const response = await fetch('/api/expenses', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/expenses`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -67,7 +71,13 @@ const Reports = () => {
 
   const fetchCategories = async (token) => {
     try {
-      const response = await fetch('/api/categories', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/categories`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

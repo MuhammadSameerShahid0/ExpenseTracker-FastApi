@@ -35,7 +35,13 @@ const ExpensesList = () => {
 
   const fetchExpenses = async (token) => {
     try {
-      const response = await fetch('/api/expenses', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/expenses`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -63,7 +69,13 @@ const ExpensesList = () => {
 
   const fetchCategories = async (token) => {
     try {
-      const response = await fetch('/api/categories', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/categories`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -123,13 +135,18 @@ const ExpensesList = () => {
     if (!selectedExpense) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/delete_expense_list_item?transaction_id=${selectedExpense}`, {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/delete_expense_list_item?transaction_id=${selectedExpense}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
-        }
+        },
       });
 
       if (response.ok) {
@@ -213,10 +230,16 @@ const ExpensesList = () => {
         datetime: updatedExpense.date // This should be in ISO format for datetime
       };
       
-      const response = await fetch('/api/edit_expense_list', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/edit_expense_list`, {
         method: 'POST',  // Changed from PUT to POST to match backend
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody)

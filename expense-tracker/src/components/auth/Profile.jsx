@@ -36,7 +36,13 @@ const Profile = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await fetch('/api/user_details', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/user_details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -73,8 +79,14 @@ const Profile = () => {
 
   const fetchUserStats = async (token) => {
     try {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
       // Fetch total expense amount
-      const totalAmountResponse = await fetch('/api/total_amount', {
+      const totalAmountResponse = await fetch(`${apiBaseUrl}/api/total_amount`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -94,7 +106,7 @@ const Profile = () => {
       }
 
       // Fetch total transactions
-      const totalTransactionsResponse = await fetch('/api/total_transactions', {
+      const totalTransactionsResponse = await fetch(`${apiBaseUrl}/api/total_transactions`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -122,7 +134,13 @@ const Profile = () => {
 
   const fetchCategoriesCount = async (token) => {
     try {
-      const response = await fetch('/api/categories', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/categories`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -151,11 +169,17 @@ const Profile = () => {
   // ✅ Fetch total budget for the month
   const fetchTotalBudgetForMonth = async (token, month) => {
     try {
-      const response = await fetch(`/api/total-set-budget-amount-according-to-month?month=${month}`, {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/total-set-budget-amount-according-to-month?month=${month}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 

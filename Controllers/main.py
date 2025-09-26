@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from Controllers.AuthController import AuthRouter
@@ -18,6 +19,15 @@ app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY"),  # must be secure in production
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(AuthRouter, prefix="/api")

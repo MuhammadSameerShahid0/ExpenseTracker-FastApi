@@ -43,7 +43,13 @@ const AccountSettings = () => {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await fetch('/api/user_details', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/user_details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -106,7 +112,13 @@ const AccountSettings = () => {
           new_password: formData.newPassword || ""
         };
         
-        const response = await fetch('/api/change-password', {
+        // Determine the API base URL based on the environment
+        const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiBaseUrl = isDevelopment 
+          ? 'http://localhost:8000'  // Local development backend
+          : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+        
+        const response = await fetch(`${apiBaseUrl}/api/change-password`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -134,7 +146,13 @@ const AccountSettings = () => {
           new_password: ""      // Empty for profile-only updates
         };
         
-        const response = await fetch('/api/change-password', {
+        // Determine the API base URL based on the environment
+        const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiBaseUrl = isDevelopment 
+          ? 'http://localhost:8000'  // Local development backend
+          : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+        
+        const response = await fetch(`${apiBaseUrl}/api/change-password`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -160,7 +178,13 @@ const AccountSettings = () => {
   const handleEnable2FA = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/2fa_enable', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/2fa_enable`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -186,7 +210,13 @@ const AccountSettings = () => {
   const handleDisable2FA = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/2fa_disable', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/2fa_disable`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -230,7 +260,13 @@ const AccountSettings = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/verify_2fa?code=${verificationCode}`, {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/verify_2fa?code=${verificationCode}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -263,7 +299,13 @@ const AccountSettings = () => {
         setError('');
         
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/delete-account', {
+        // Determine the API base URL based on the environment
+        const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const apiBaseUrl = isDevelopment 
+          ? 'http://localhost:8000'  // Local development backend
+          : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+        
+        const response = await fetch(`${apiBaseUrl}/api/delete-account`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -296,7 +338,13 @@ const AccountSettings = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth_logging', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/auth_logging`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -328,7 +376,13 @@ const AccountSettings = () => {
       setError('');
       
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/return_selected_logging', {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+      
+      const response = await fetch(`${apiBaseUrl}/api/return_selected_logging`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -39,7 +39,13 @@ const AccountReactivation = () => {
     }
 
     try {
-      const response = await fetch(`/api/re-active-account?email=${encodeURIComponent(formData.email)}`, {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+
+      const response = await fetch(`${apiBaseUrl}/api/re-active-account?email=${encodeURIComponent(formData.email)}`, {
         method: 'POST'
       });
 
@@ -72,7 +78,13 @@ const AccountReactivation = () => {
     }
 
     try {
-      const response = await fetch(`/api/re-active-account-verification-email-code?code=${formData.code}`, {
+      // Determine the API base URL based on the environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBaseUrl = isDevelopment 
+        ? 'http://localhost:8000'  // Local development backend
+        : 'https://expense-tracker-fast-api.vercel.app'; // Production backend
+
+      const response = await fetch(`${apiBaseUrl}/api/re-active-account-verification-email-code?code=${formData.code}`, {
         method: 'POST'
       });
 
