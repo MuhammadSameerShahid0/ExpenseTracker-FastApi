@@ -200,8 +200,7 @@ const Profile = () => {
       <main className="dashboard-main">
         <div className="profile-container">          
           <div className="profile-content">
-            {/* Profile Card */
-}
+            {/* Profile Card */}
             <div className="modern-card profile-card">
               <div className="profile-header-section">
                 <div className="avatar-container">
@@ -223,7 +222,7 @@ const Profile = () => {
                   <p className="user-email">{user?.email || 'user@example.com'}</p>
                   
                  
-                  
+                 
                   <div className="user-stats">
                     <div className="stat-item">
                       <span className="stat-value">PKR {stats.totalExpenses.toFixed(2)}</span>

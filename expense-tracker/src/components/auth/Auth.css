@@ -1249,7 +1249,36 @@ body {
   font-size: 0.9rem;
 }
 
-/* Responsive Design */
+/* Profile Page Responsive Design */
+@media (max-width: 1024px) {
+  .profile-container,
+  .settings-container {
+    padding: 1.5rem;
+  }
+  
+  .profile-header-section {
+    padding: 1.5rem;
+  }
+  
+  .user-stats {
+    gap: 1rem;
+  }
+  
+  .stat-item {
+    min-width: 80px;
+    max-width: 100px;
+    padding: 0.6rem 0.5rem;
+  }
+  
+  .stat-value {
+    font-size: 0.85rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-container,
   .settings-container {
@@ -1265,15 +1294,55 @@ body {
   .avatar-container {
     margin-right: 0;
     margin-bottom: 1.5rem;
+    align-self: center;
+  }
+  
+  .user-info {
+    text-align: center;
+  }
+  
+  .user-name {
+    font-size: 1.5rem;
+  }
+  
+  .user-email {
+    font-size: 1rem;
   }
   
   .user-stats {
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .stat-item {
+    min-width: 85px;
+    padding: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .membership-stat {
+    min-width: 100%;
+    margin-top: 0.5rem;
   }
   
   .profile-details-grid {
     grid-template-columns: 1fr;
     padding: 1.5rem;
+    gap: 1.2rem;
+  }
+  
+  .detail-card {
+    padding: 1.2rem;
+  }
+  
+  .detail-content h3 {
+    font-size: 1.1rem;
+  }
+  
+  .detail-content p {
+    font-size: 0.9rem;
   }
   
   .card-header {
@@ -1300,6 +1369,95 @@ body {
   
   .form-actions {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container,
+  .settings-container {
+    padding: 0.8rem;
+  }
+  
+  .profile-header-section {
+    padding: 1rem;
+  }
+  
+  .user-avatar-large {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .avatar-initials-large {
+    font-size: 2.5rem;
+  }
+  
+  .user-name {
+    font-size: 1.3rem;
+  }
+  
+  .user-email {
+    font-size: 0.9rem;
+  }
+  
+  .user-stats {
+    gap: 0.6rem;
+  }
+  
+  .stat-item {
+    min-width: 70px;
+    padding: 0.5rem 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-value {
+    font-size: 0.8rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .membership-stat {
+    min-width: 100%;
+  }
+  
+  .profile-details-grid {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .detail-card {
+    padding: 1rem;
+  }
+  
+  .detail-icon {
+    font-size: 1.8rem;
+  }
+  
+  .detail-content h3 {
+    font-size: 1rem;
+  }
+  
+  .detail-content p {
+    font-size: 0.85rem;
+  }
+}
+
+/* Ensure profile page follows the same responsive adjustments as dashboard */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.dashboard-main {
+  flex: 1;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 0.5rem;
   }
 }
 
