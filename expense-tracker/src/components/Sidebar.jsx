@@ -4,7 +4,7 @@ import { useAuth } from './auth/AuthContext';
 import BudgetModal from './BudgetModal';
 import './Sidebar.css';
 
-const Sidebar = ({ isCollapsed, toggleSidebar }) => {
+const Sidebar = ({ isCollapsed, toggleSidebar, isMobile = false }) => {
   const [theme, setTheme] = useState('light');
   const { user, logout } = useAuth();
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
@@ -118,12 +118,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
     <>
       <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
-          <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <h1>{isCollapsed ? 'ET' : 'ExpenseTracker'}</h1>
-          </div>
-          <button className="sidebar-toggle" onClick={toggleSidebar}>
-            {isCollapsed ? '»' : '«'}
+          <button className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
+            {isCollapsed ? '☰' : '«'}
           </button>
+          <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+            <h1>{isCollapsed ? '' : 'ExpenseTracker'}</h1>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -132,6 +132,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link 
                 to="/dashboard" 
                 className={`nav-link ${isActiveRoute('/dashboard') ? 'active' : ''}`}
+                onClick={() => isMobile && toggleSidebar()} // Close sidebar on mobile after click
               >
                 <span className="nav-icon">📊</span>
                 {!isCollapsed && <span className="nav-text">Dashboard</span>}
@@ -139,6 +140,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link 
                 to="/add-expense" 
                 className={`nav-link ${isActiveRoute('/add-expense') ? 'active' : ''}`}
+                onClick={() => isMobile && toggleSidebar()} // Close sidebar on mobile after click
               >
                 <span className="nav-icon">➕</span>
                 {!isCollapsed && <span className="nav-text">Add Expense</span>}
@@ -146,6 +148,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link 
                 to="/expenses-list" 
                 className={`nav-link ${isActiveRoute('/expenses-list') ? 'active' : ''}`}
+                onClick={() => isMobile && toggleSidebar()} // Close sidebar on mobile after click
               >
                 <span className="nav-icon">📋</span>
                 {!isCollapsed && <span className="nav-text">Expenses List</span>}
@@ -153,6 +156,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               <Link 
                 to="/reports" 
                 className={`nav-link ${isActiveRoute('/reports') ? 'active' : ''}`}
+                onClick={() => isMobile && toggleSidebar()} // Close sidebar on mobile after click
               >
                 <span className="nav-icon">📈</span>
                 {!isCollapsed && <span className="nav-text">Reports</span>}
@@ -223,11 +227,17 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       {/* Budget Dropdown rendered outside sidebar */}
       {isBudgetMenuOpen && user && (
         <div className="budget-dropdown" ref={budgetDropdownRef}>
-          <div className="dropdown-item" onClick={handleAddBudget}>
+          <div className="dropdown-item" onClick={() => {
+            handleAddBudget();
+            isMobile && toggleSidebar(); // Close sidebar on mobile after click
+          }}>
             <span className="item-icon">➕</span>
             <span className="item-text">Set Budget</span>
           </div>
-          <div className="dropdown-item" onClick={handleViewBudgets}>
+          <div className="dropdown-item" onClick={() => {
+            handleViewBudgets();
+            isMobile && toggleSidebar(); // Close sidebar on mobile after click
+          }}>
             <span className="item-icon">📋</span>
             <span className="item-text">View Budgets</span>
           </div>
@@ -249,11 +259,17 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
           <div className="dropdown-section">
             <div className="section-title">Account</div>
-            <div className="dropdown-item" onClick={handleProfile}>
+            <div className="dropdown-item" onClick={() => {
+              handleProfile();
+              isMobile && toggleSidebar(); // Close sidebar on mobile after click
+            }}>
               <span className="item-icon">👤</span>
               <span className="item-text">Profile</span>
             </div>
-            <div className="dropdown-item" onClick={handleAccountSettings}>
+            <div className="dropdown-item" onClick={() => {
+              handleAccountSettings();
+              isMobile && toggleSidebar(); // Close sidebar on mobile after click
+            }}>
               <span className="item-icon">🔧</span>
               <span className="item-text">Account Settings</span>
             </div>
@@ -284,7 +300,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
           <div className="dropdown-divider"></div>
 
-          <div className="dropdown-item logout-item" onClick={handleLogoutClick}>
+          <div className="dropdown-item logout-item" onClick={() => {
+            handleLogoutClick();
+            isMobile && toggleSidebar(); // Close sidebar on mobile after click
+          }}>
             <span className="item-icon">🚪</span>
             <span className="item-text">Logout</span>
           </div>
