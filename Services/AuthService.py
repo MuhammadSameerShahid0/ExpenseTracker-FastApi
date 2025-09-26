@@ -346,12 +346,27 @@ class AuthService(IAuthService):
 
     # region Login
     def login(self, request: AuthSchema.LoginRequest, request_session: Request):
+        global user_exists
         try:
             errors = []
 
             user_exists = self.db.query(UserModel).filter(UserModel.email == request.email).first()
             if user_exists is None:
                 errors.append("Entered Email doesn't exist")
+
+            if user_exists.password_hash == "Register with google" and user_exists.google_id is not None:
+                logger_message = f"User '{user_exists.email}' tried to login manually, but account registered with google"
+                self.file_and_db_handler_log.logger(
+                    loglevel="ERROR",
+                    message=logger_message,
+                    event_source="AuthService.Login",
+                    exception="NULL",
+                    user_id=user_exists.id
+                )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Kindly login with google"
+                )
 
             if user_exists is not None:
                 verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
@@ -414,7 +429,7 @@ class AuthService(IAuthService):
                     "from_project": "ExpenseTracker"
                 })
 
-                logger_message = "Login Successful. Token created"
+                logger_message = "Login Successful."
                 self.file_and_db_handler_log.logger(
                     loglevel="INFO",
                     message=logger_message,
@@ -439,7 +454,7 @@ class AuthService(IAuthService):
                 message=logger_message,
                 event_source="AuthService.Login",
                 exception=str(ex),
-                user_id=int(request.email)
+                user_id=user_exists.id
             )
 
             raise HTTPException(

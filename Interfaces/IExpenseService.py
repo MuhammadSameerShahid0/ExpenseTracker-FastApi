@@ -24,3 +24,7 @@ class IExpenseService(ABC):
     @abstractmethod
     def edit_expense_list(self,user_id: int, request : EditExpenseList) -> str:
         pass
+
+    @abstractmethod
+    def delete_expense_list_item(self,user_id: int, transaction_id: int) -> str:
+        pass

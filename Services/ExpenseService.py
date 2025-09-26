@@ -1,18 +1,12 @@
 from typing import List
-
 from fastapi import HTTPException
-from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from datetime import datetime
-
 from starlette import status
-from unicodedata import category
-
 from Interfaces.IExpenseService import IExpenseService
 from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
 from Models.Table.Transaction import Transaction as TransactionModel
 from Models.Table.Category import Category as CategoryModel
-from Models.Table.User import User as UserModel
 from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
 
 class ExpenseService(IExpenseService):
@@ -287,6 +281,45 @@ class ExpenseService(IExpenseService):
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="ExpenseService.EditExpenseList",
+                exception=str(ex),
+                user_id=user_id
+            )
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    def delete_expense_list_item(self, user_id: int, transaction_id: int):
+        try:
+            transaction_model = self.db.query(TransactionModel).filter(TransactionModel.user_id == user_id, TransactionModel.id == transaction_id).first()
+            if transaction_model is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"No transaction found for user {user_id} and transaction id {transaction_id}"
+                )
+
+            self.db.delete(transaction_model)
+            self.db.commit()
+
+            logger_message = f"Successfully deleted expense item '{transaction_model.category.name}' against payment method {transaction_model.payment_method}"
+            self.file_and_db_handler_log.logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.DeleteExpenseListItem",
+                exception="NULL",
+                user_id=user_id
+            )
+            return f"Successfully deleted expense item '{transaction_model.category.name}' against payment method {transaction_model.payment_method}"
+        except Exception as ex:
+            logger_message = f"Error deleting expense item, transaction id {transaction_id}"
+            self.file_and_db_handler_log.logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.DeleteExpenseListItem",
                 exception=str(ex),
                 user_id=user_id
             )
