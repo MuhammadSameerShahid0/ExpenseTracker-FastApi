@@ -118,6 +118,55 @@ const ExpensesList = () => {
     }
   };
 
+  // Delete selected expense
+  const handleDeleteSelected = async () => {
+    if (!selectedExpense) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/delete_expense_list_item?transaction_id=${selectedExpense}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+          const responseData = await response.json().catch(() => ({ detail: 'Expense deleted successfully!' }));
+          
+          // Remove the deleted expense from local state
+          setExpenses(prevExpenses => 
+            prevExpenses.filter(expense => expense.id !== selectedExpense)
+          );
+          setFilteredExpenses(prevFiltered => 
+            prevFiltered.filter(expense => expense.id !== selectedExpense)
+          );
+          
+          // Update total amount
+          const deletedExpense = expenses.find(expense => expense.id === selectedExpense);
+          if (deletedExpense) {
+            setTotalAmount(prevTotal => prevTotal - deletedExpense.amount);
+          }
+          
+          // Clear selection and exit select mode
+          setSelectedExpense(null);
+          setIsSelectMode(false);
+          
+          // Show the backend's return message
+          const successMessage = typeof responseData === 'string' ? responseData : (responseData.detail || 'Expense deleted successfully!');
+          showMessageModal('success', successMessage);
+        } else {
+          const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+          const errorMessage = typeof errorData === 'object' ? errorData.detail || JSON.stringify(errorData) : errorData;
+          showMessageModal('error', `Failed to delete expense: ${errorMessage || 'Unknown error'}`);
+        }
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      showMessageModal('error', 'An error occurred while deleting the expense.');
+    }
+  };
+
   // Close the edit modal
   const closeEditModal = () => {
     setShowEditModal(false);
@@ -174,6 +223,8 @@ const ExpensesList = () => {
       });
 
       if (response.ok) {
+        const responseData = await response.json().catch(() => ({ detail: 'Expense updated successfully!' }));
+        
         // Update the local state to reflect the changes
         setExpenses(prevExpenses => 
           prevExpenses.map(exp => 
@@ -187,11 +238,15 @@ const ExpensesList = () => {
           )
         );
         closeEditModal();
-        showMessageModal('success', 'Expense updated successfully!');
+        
+        // Show the backend's return message
+        const successMessage = typeof responseData === 'string' ? responseData : (responseData.detail || 'Expense updated successfully!');
+        showMessageModal('success', successMessage);
         return true;
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        showMessageModal('error', `Failed to update expense: ${errorData.detail || 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        const errorMessage = typeof errorData === 'object' ? errorData.detail || JSON.stringify(errorData) : errorData;
+        showMessageModal('error', `Failed to update expense: ${errorMessage || 'Unknown error'}`);
         return false;
       }
     } catch (error) {
@@ -421,13 +476,6 @@ const ExpensesList = () => {
               {currentExpenses.length > 0 && (
                 <div className="summary-item summary-controls">
                   <div className="expenses-list-controls">
-                    <button 
-                      className={`select-mode-btn ${isSelectMode ? 'active' : ''}`}
-                      onClick={toggleSelectMode}
-                    >
-                      {isSelectMode ? 'Exit' : 'Select Items'}
-                    </button>
-                    
                     {isSelectMode && selectedExpense && (
                       <button 
                         className="edit-selected-btn"
@@ -436,6 +484,22 @@ const ExpensesList = () => {
                         Edit
                       </button>
                     )}
+                    
+                    {isSelectMode && selectedExpense && (
+                      <button 
+                        className="delete-selected-btn"
+                        onClick={handleDeleteSelected}
+                      >
+                        Delete
+                      </button>
+                    )}
+                    
+                    <button 
+                      className={`select-mode-btn ${isSelectMode ? 'active' : ''}`}
+                      onClick={toggleSelectMode}
+                    >
+                      {isSelectMode ? 'Exit' : 'Select Items'}
+                    </button>
                   </div>
                 </div>
               )}

@@ -302,10 +302,13 @@ class ExpenseService(IExpenseService):
                     detail=f"No transaction found for user {user_id} and transaction id {transaction_id}"
                 )
 
+            category_name = transaction_model.category.name if transaction_model.category else "Unknown"
+            payment_method = transaction_model.payment_method
+
             self.db.delete(transaction_model)
             self.db.commit()
 
-            logger_message = f"Successfully deleted expense item '{transaction_model.category.name}' against payment method {transaction_model.payment_method}"
+            logger_message = f"Successfully deleted expense item '{category_name}' against payment method {payment_method}"
             self.file_and_db_handler_log.logger(
                 loglevel="INFO",
                 message=logger_message,
@@ -313,7 +316,7 @@ class ExpenseService(IExpenseService):
                 exception="NULL",
                 user_id=user_id
             )
-            return f"Successfully deleted expense item '{transaction_model.category.name}' against payment method {transaction_model.payment_method}"
+            return f"Successfully deleted expense item '{category_name}' against payment method {payment_method}"
         except Exception as ex:
             logger_message = f"Error deleting expense item, transaction id {transaction_id}"
             self.file_and_db_handler_log.logger(
