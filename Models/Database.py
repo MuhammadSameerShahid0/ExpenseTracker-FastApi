@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-SQLALCHEMY_DATABASE_URI = r"mssql+pyodbc://DESKTOP-04FQ9HU\SQLEXPRESS?trusted_connection=yes&driver=ODBC+Driver+18+for+SQL+Server&database=ExpenseTrackerFastApi&TrustServerCertificate=yes"
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:1234@localhost:5432/ExpenseTracker'
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
