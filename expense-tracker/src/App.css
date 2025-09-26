@@ -78,6 +78,7 @@ button:focus-visible {
 .app-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 .main-content {
@@ -85,10 +86,48 @@ button:focus-visible {
   margin-left: 250px;
   transition: margin-left 0.3s ease;
   padding: 20px;
+  width: calc(100% - 250px); /* Ensure proper width calculation */
 }
 
 .main-content.collapsed {
   margin-left: 70px;
+  width: calc(100% - 70px); /* Adjust width when sidebar is collapsed */
+}
+
+/* Mobile adjustments - fix overlap issue */
+@media (max-width: 768px) {
+  .app-layout {
+    position: relative;
+  }
+  
+  .sidebar {
+    position: fixed;
+    z-index: 999;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    width: 250px;
+    transform: translateX(-100%); /* Hide sidebar off-screen initially */
+    transition: transform 0.3s ease;
+  }
+  
+  /* When sidebar is not collapsed on mobile, show it fully */
+  .sidebar:not(.collapsed) {
+    transform: translateX(0); /* Show full sidebar */
+  }
+  
+  /* Adjust main content */
+  .main-content {
+    margin-left: 0;
+    padding: 10px;
+    width: 100%;
+    transition: transform 0.3s ease;
+  }
+  
+  /* When sidebar is open on mobile, we'll handle this via JavaScript classes */
+  .main-content.sidebar-open {
+    transform: translateX(0); /* For now, no transform - sidebar overlays */
+  }
 }
 
 /* Dark theme overrides */

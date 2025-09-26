@@ -7,6 +7,7 @@ const Navbar = () => {
   const [theme, setTheme] = useState('light');
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -33,39 +34,66 @@ const Navbar = () => {
     localStorage.setItem('theme', newTheme);
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   const handleLogoClick = () => {
     if (user) {
       navigate('/dashboard');
+      closeMobileMenu(); // Close mobile menu when logo is clicked
     } else {
       navigate('/');
+      closeMobileMenu(); // Close mobile menu when logo is clicked
     }
   };
 
   const handleProfile = () => {
     navigate('/profile');
     setIsUserMenuOpen(false);
+    closeMobileMenu(); // Close mobile menu when navigating
   };
 
   const handleAccountSettings = () => {
     navigate('/account-settings');
     setIsUserMenuOpen(false);
+    closeMobileMenu(); // Close mobile menu when navigating
   };
 
   const handleLogoutClick = () => {
     logout();
     navigate('/');
     setIsUserMenuOpen(false);
+    closeMobileMenu(); // Close mobile menu when logging out
   };
 
+  const handleMobileLinkClick = () => {
+    closeMobileMenu();
+  };
 
   return (
     <header className="header">
       <div className="container">
-        {/* Left Section - Logo + Links */}
+        {/* Left Section - Logo + Hamburger */}
         <div className="nav-left">
           <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
             <h1>ExpenseTracker</h1>
           </div>
+
+          {/* Hamburger menu for mobile */}
+          <button 
+            className="mobile-menu-button" 
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            <span className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}></span>
+          </button>
 
           {user && (
             <nav className="nav-links">
@@ -117,6 +145,33 @@ const Navbar = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu">
+          {user ? (
+            <>
+              <Link to="/dashboard" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Dashboard</Link>
+              <Link to="/add-expense" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Add Expense</Link>
+              <Link to="/expenses-list" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Expenses List</Link>
+              <Link to="/reports" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Reports</Link>
+              <Link to="/profile" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Profile</Link>
+              <Link to="/account-settings" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Account Settings</Link>
+              <button 
+                className="btn btn-outline mobile-menu-item" 
+                onClick={handleLogoutClick}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-outline mobile-menu-item" onClick={handleMobileLinkClick}>Login</Link>
+              <Link to="/register" className="btn btn-primary mobile-menu-item" onClick={handleMobileLinkClick}>Register</Link>
+            </>
+          )}
+        </div>
+      )}
     </header>
   );
 };

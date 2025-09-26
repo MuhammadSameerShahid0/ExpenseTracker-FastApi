@@ -72,6 +72,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  z-index: 1001; /* Ensure it's above other elements */
 }
 
 .hamburger-icon {
@@ -82,6 +83,19 @@
   transition: var(--transition);
 }
 
+/* Animation for when menu is open */
+.hamburger-icon:nth-child(1).open {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-icon:nth-child(2).open {
+  opacity: 0;
+}
+
+.hamburger-icon:nth-child(3).open {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
 /* Mobile menu */
 .mobile-menu {
   display: none;
@@ -90,6 +104,13 @@
   padding: 1rem 2rem;
   background-color: var(--card-bg);
   border-top: 1px solid var(--gray-300);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
 }
 
 .mobile-menu-item {
@@ -100,6 +121,10 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .nav {
+    display: none;
+  }
+  
+  .nav-links {
     display: none;
   }
   
@@ -114,6 +139,15 @@
   
   .mobile-menu.open {
     display: flex;
+  }
+  
+  /* Adjust logo and layout for mobile */
+  .header .container {
+    padding: 0.8rem 1rem;
+  }
+  
+  .logo h1 {
+    font-size: 1.3rem;
   }
 }
 
