@@ -15,8 +15,16 @@ class BudgetService(IBudgetService):
         self.db = db
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
+    def _log(self, user_id: int, level: str, message: str, source: str, exception: str = "NULL"):
+        self.file_and_db_handler_log.file_logger(
+            loglevel=level, message=message, event_source=source, exception=exception, user_id=user_id
+        )
+        self.file_and_db_handler_log.db_logger(
+            loglevel=level, message=message, event_source=source, exception=exception, user_id=user_id
+        )
+
     def add_budget(self, user_id: int, amount: float, category_id: int):
-        global check_category
+        global user_budget
         try:
             errors = []
             current_month = datetime.now().month
@@ -30,7 +38,7 @@ class BudgetService(IBudgetService):
 
             if user_budget is not None:
                 if user_budget.month <= str(current_month):
-                    errors.append(f"This category '{check_category.name}' budget for this month already set")
+                    errors.append(f"Category '{user_budget.category.name}' budget for this month already set")
 
             error_len = len(errors)
             if error_len > 0:
@@ -50,26 +58,19 @@ class BudgetService(IBudgetService):
             self.db.commit()
             self.db.refresh(response)
 
-            logger_message = f"Budget of {amount} set for category {check_category.name} successfully"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="BudgetService.AddBudget",
-                exception="NULL",
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "INFO",
+                      f"Budget of {amount} set for category {check_category.name} successfully",
+                      "BudgetService.AddBudget")
 
             return f"Budget '{amount}' set with category '{check_category.name}' created successfully"
         except Exception as ex:
-            logger_message = f"Error setting budget, category {check_category.name} already set for this month"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="BudgetService.AddBudget",
-                exception=str(ex),
-                user_id=user_id
-            )
-            
+            self._log(user_id,
+                      "ERROR",
+                      f"Error setting budget, category {user_budget.category.name} already set for this month",
+                      "BudgetService.AddBudget",
+                      str(ex))
+
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
@@ -106,7 +107,7 @@ class BudgetService(IBudgetService):
                 })
 
             logger_message = f"Retrieved {len(result)} budgets for user"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="BudgetService.GetBudgets",
@@ -117,7 +118,7 @@ class BudgetService(IBudgetService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving budgets for user"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="BudgetService.GetBudgets",
@@ -139,7 +140,7 @@ class BudgetService(IBudgetService):
                 result = sum(exp.limit_amount for exp in user_budget)
 
             logger_message = f"Retrieved monthly budget total {result} for user, month {month}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="BudgetService.BudgetMonthTotal",
@@ -150,7 +151,7 @@ class BudgetService(IBudgetService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving monthly budget total for user, month {month}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="BudgetService.BudgetMonthTotal",
@@ -166,51 +167,32 @@ class BudgetService(IBudgetService):
         try:
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
                                                             BudgetModel.category_id == category_id).first()
-
-            category_model = self.db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
-            if category_model is None:
-                raise HTTPException(status_code=404, detail="Category not found")
-
             if user_budget is not None:
                 user_budget.limit_amount = amount
                 self.db.commit()
                 self.db.refresh(user_budget)
 
-                logger_message = f"Budget amount updated to {amount} for category {category_model.name}"
-                self.file_and_db_handler_log.logger(
-                    loglevel="INFO",
-                    message=logger_message,
-                    event_source="BudgetService.EditBudgetAmount",
-                    exception="NULL",
-                    user_id=user_id
-                )
-
+                self._log(user_id,
+                          "INFO",
+                          f"Budget amount updated to {amount} for category {user_budget.category.name}",
+                          "BudgetService.EditBudgetAmount")
                 return "Successfully updated budget amount"
-            else:
-                logger_message = f"Failed to update budget amount for category {category_model.name}"
-                self.file_and_db_handler_log.logger(
-                    loglevel="WARNING",
-                    message=logger_message,
-                    event_source="BudgetService.EditBudgetAmount",
-                    exception="NULL",
-                    user_id=user_id
-                )
-                return "Failed to update budget amount"
+
+            return "Failed to update budget amount"
         except Exception as ex:
             logger_message = f"Error updating budget amount for category to {amount}"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="BudgetService.EditBudgetAmount",
-                exception=str(ex),
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "BudgetService.EditBudgetAmount",
+                      str(ex))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=str(ex)
             )
 
     def delete_set_budget(self, user_id: int, category_id: int):
+        global user_budget
         try:
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id, BudgetModel.category_id == category_id).first()
             if user_budget is not None:
@@ -220,34 +202,20 @@ class BudgetService(IBudgetService):
                 self.db.commit()
 
                 logger_message = f"Budget for category '{category.name}' with amount '{user_budget.limit_amount}' deleted successfully"
-                self.file_and_db_handler_log.logger(
-                    loglevel="INFO",
-                    message=logger_message,
-                    event_source="BudgetService.DeleteSetBudget",
-                    exception="NULL",
-                    user_id=user_id
-                )
-
+                self._log(user_id,
+                          "INFO",
+                          logger_message,
+                          "BudgetService.DeleteSetBudget")
                 return f"Budget for category '{category.name}' with amount '{user_budget.limit_amount}' deleted successfully"
-            else:
-                logger_message = f"Failed to delete budget for category {category_id}"
-                self.file_and_db_handler_log.logger(
-                    loglevel="WARNING",
-                    message=logger_message,
-                    event_source="BudgetService.DeleteSetBudget",
-                    exception="NULL",
-                    user_id=user_id
-                )
-                return "Failed to delete budget amount"
+
+            return "Failed to delete budget amount"
         except Exception as ex:
-            logger_message = f"Error deleting budget for category {category_id}"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="BudgetService.DeleteSetBudget",
-                exception=str(ex),
-                user_id=user_id
-            )
+            logger_message = f"Error deleting budget for category {category.name}"
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "BudgetService.DeleteSetBudget",
+                      str(ex))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=str(ex)

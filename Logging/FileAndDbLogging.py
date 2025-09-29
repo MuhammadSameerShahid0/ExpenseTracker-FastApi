@@ -14,7 +14,6 @@ def file_and_db_logging(filename: str):
     if not logger.handlers:
         logger.setLevel(logging.INFO)
 
-
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
         file_handler = TimedRotatingFileHandler(

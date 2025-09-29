@@ -4,7 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="" />
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logging/Helper/FileandDbLogHandler.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/Helper/FileandDbLogHandler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AnalyticsService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AnalyticsService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AuthService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AuthService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/BudgetService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/BudgetService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/ExpenseService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/ExpenseService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/AnalyticsService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AnalyticsService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/BudgetService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/BudgetService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/ExpenseService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/ExpenseService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/LoggingService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/LoggingService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/TwoFaService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/TwoFaService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/UserService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/UserService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +29,21 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;MuhammadSameerShahid0&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/MuhammadSameerShahid0/ExpenseTracker-FastApi.git&quot;,
+    &quot;accountId&quot;: &quot;79614a55-eb1f-4a97-8aa2-cc6b5ca188a5&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="33NP8a7lThubnFG7pFhwgN1TRKQ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -24,9 +52,11 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.ExpenseTracker Debug.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "git-widget-placeholder": "master",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/DELL/Desktop/ET-FastApi",
@@ -76,5 +106,66 @@
       <updated>1759154397949</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/BudgetService.py</url>
+          <line>196</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/BudgetService.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/BudgetService.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>264</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>169</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>187</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py</url>
+          <line>6</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py</url>
+          <line>11</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>189</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>247</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>249</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

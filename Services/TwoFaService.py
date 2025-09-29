@@ -18,7 +18,7 @@ class TwoFaService(ITwoFaService):
             user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
             if not user:
                 logger_message = f"Attempt to enable 2FA for non-existent user {user_id}"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="WARNING",
                     message=logger_message,
                     event_source="TwoFaService.Enable2FA",
@@ -32,7 +32,7 @@ class TwoFaService(ITwoFaService):
 
             if user.status_2fa is True:
                 logger_message = f"Attempt to enable 2FA for user {user.email} who already has 2FA enabled"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="WARNING",
                     message=logger_message,
                     event_source="TwoFaService.Enable2FA",
@@ -53,7 +53,7 @@ class TwoFaService(ITwoFaService):
             self.db.refresh(user)
 
             logger_message = f"2FA enabled successfully for user {user.email}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="TwoFaService.Enable2FA",
@@ -70,7 +70,7 @@ class TwoFaService(ITwoFaService):
             return response
         except Exception as ex:
             logger_message = f"Error enabling 2FA for user {user_id}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="TwoFaService.Enable2FA",
@@ -98,7 +98,7 @@ class TwoFaService(ITwoFaService):
                     self.db.refresh(user)
 
                     logger_message = f"2FA disabled successfully for user {user.email}"
-                    self.file_and_db_handler_log.logger(
+                    self.file_and_db_handler_log.file_logger(
                         loglevel="INFO",
                         message=logger_message,
                         event_source="TwoFaService.Disable2FA",
@@ -109,7 +109,7 @@ class TwoFaService(ITwoFaService):
                     return {"msg": "2FA disabled successfully"}
                 else:
                     logger_message = f"Attempt to disable 2FA for user {user.email}, but 2FA was already disabled"
-                    self.file_and_db_handler_log.logger(
+                    self.file_and_db_handler_log.file_logger(
                         loglevel="INFO",
                         message=logger_message,
                         event_source="TwoFaService.Disable2FA",
@@ -119,7 +119,7 @@ class TwoFaService(ITwoFaService):
                     return {"msg": "2FA already disabled"}
 
             logger_message = f"Attempt to disable 2FA for non-existent user {user_id}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="WARNING",
                 message=logger_message,
                 event_source="TwoFaService.Disable2FA",
@@ -132,7 +132,7 @@ class TwoFaService(ITwoFaService):
             )
         except Exception as ex:
             logger_message = f"Error disabling 2FA for user {user_id}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="TwoFaService.Disable2FA",

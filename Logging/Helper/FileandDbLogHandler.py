@@ -17,7 +17,7 @@ class FileandDbHandlerLog:
     def __init__(self, db : Session):
         self.db = db
 
-    def logger(self, loglevel: str, message: str, event_source: str, exception : str, user_id: int = None):
+    def file_logger(self, loglevel: str, message: str, event_source: str, exception : str, user_id: int = None):
         final_user_id = user_id
         if final_user_id is None:
             final_user_id = get_id_from_token()
@@ -33,6 +33,13 @@ class FileandDbHandlerLog:
         else:
             logger.debug(f"{message} , user_id : {final_user_id}")
 
+        return "File logger added in file successfully"
+
+    def db_logger(self, loglevel: str, message: str, event_source: str, exception : str, user_id: int = None):
+        final_user_id = user_id
+        if final_user_id is None:
+            final_user_id = get_id_from_token()
+
         logger_info = LoggingModel(
             loglevel=loglevel,
             message=message,
@@ -46,4 +53,4 @@ class FileandDbHandlerLog:
         self.db.commit()
         self.db.refresh(logger_info)
 
-        return "Logger info added in db successfully"
+        return "Logger added in db successfully"

@@ -34,16 +34,21 @@ class LoggingService(ILoggingService):
             LoggingModel.user_id == user_id,
             or_(
                 LoggingModel.event_source.startswith("AuthService.Login"),
-                LoggingModel.event_source.startswith("ExpenseService.AddCategory"),
-                LoggingModel.event_source.startswith("BudgetService.AddBudget"),
-                LoggingModel.event_source.startswith("BudgetService.DeleteSetBudget"),
+                LoggingModel.event_source.startswith("AuthService.RegisterCodeAndOTP"),
+                LoggingModel.event_source.startswith("AuthService.LoginCodeAndOTP"),
+                LoggingModel.event_source.startswith("AuthService.DeleteAccount"),
                 LoggingModel.event_source.startswith("AuthService.Register"),
                 LoggingModel.event_source.startswith("AuthService.ChangePassword"),
                 LoggingModel.event_source.startswith("AuthService.UpdateProfile"),
+                LoggingModel.event_source.startswith("ExpenseService.AddCategory"),
+                LoggingModel.event_source.startswith("BudgetService.AddBudget"),
+                LoggingModel.event_source.startswith("BudgetService.DeleteSetBudget"),
                 LoggingModel.event_source.startswith("ExpenseService.EditExpenseList"),
                 LoggingModel.event_source.startswith("BudgetService.EditBudgetAmount"),
                 LoggingModel.event_source.startswith("ExpenseService.AddExpense"),
-                LoggingModel.event_source.startswith("ExpenseService.DeleteExpenseListItem")
+                LoggingModel.event_source.startswith("ExpenseService.DeleteExpenseListItem"),
+                LoggingModel.event_source.startswith("AuthService.AccountReActive"),
+
             )
             ).all()
                        )

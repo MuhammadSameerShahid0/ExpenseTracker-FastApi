@@ -25,7 +25,7 @@ class UserService(IUserService):
                 )
                 
                 logger_message = f"User details retrieved for user {user.email}"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="INFO",
                     message=logger_message,
                     event_source="UserService.GetUserDetails",
@@ -36,7 +36,7 @@ class UserService(IUserService):
                 return response
             else:
                 logger_message = f"Attempt to retrieve details for non-existent user {user_id}"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="WARNING",
                     message=logger_message,
                     event_source="UserService.GetUserDetails",
@@ -46,7 +46,7 @@ class UserService(IUserService):
                 raise HTTPException(status_code=404, detail="User not found")
         except Exception as ex:
             logger_message = f"Error retrieving user details for user {user_id}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="UserService.GetUserDetails",

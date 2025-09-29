@@ -14,6 +14,14 @@ class ExpenseService(IExpenseService):
         self.db = db
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
+    def _log(self, user_id: int, level: str, message: str, source: str, exception: str = "NULL"):
+        self.file_and_db_handler_log.file_logger(
+            loglevel=level, message=message, event_source=source, exception=exception, user_id=user_id
+        )
+        self.file_and_db_handler_log.db_logger(
+            loglevel=level, message=message, event_source=source, exception=exception, user_id=user_id
+        )
+
     def add_expense(self, expense: ExpenseCreate, user_id: int) -> ExpenseResponse:
         try:
             category = self.db.query(CategoryModel).filter(
@@ -32,19 +40,15 @@ class ExpenseService(IExpenseService):
                 self.db.refresh(category)
 
                 logger_message = f"New category '{expense.category_name}' created for expense"
-                self.file_and_db_handler_log.logger(
-                    loglevel="INFO",
-                    message=logger_message,
-                    event_source="ExpenseService.AddExpense",
-                    exception="NULL",
-                    user_id=user_id
-                )
+                self._log(user_id,
+                          "INFO",
+                          logger_message,
+                          "ExpenseService.AddExpense")
 
-            # Create the expense transaction
             db_expense = TransactionModel(
                 amount=expense.amount,
                 description=expense.description,
-                date=datetime.now(),
+                date=datetime.now,
                 category_id=category.id,
                 user_id=user_id,
                 payment_method = expense.payment_method
@@ -55,13 +59,10 @@ class ExpenseService(IExpenseService):
             self.db.refresh(db_expense)
 
             logger_message = f"Expense of {expense.amount} added with description: {expense.description}"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="ExpenseService.AddExpense",
-                exception="NULL",
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "INFO",
+                      logger_message,
+                      "ExpenseService.AddExpense")
 
             return ExpenseResponse(
                 id=db_expense.id,
@@ -73,13 +74,11 @@ class ExpenseService(IExpenseService):
             )
         except Exception as ex:
             logger_message = f"Error adding expense with amount {expense.amount}"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="ExpenseService.AddExpense",
-                exception=str(ex),
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "ExpenseService.AddExpense",
+                      str(ex))
             raise ex
 
     def get_expenses(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ExpenseResponse]:
@@ -101,7 +100,7 @@ class ExpenseService(IExpenseService):
                 ))
 
             logger_message = f"Retrieved {len(expense_responses)} expenses, skip: {skip}, limit: {limit}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="ExpenseService.GetExpenses",
@@ -112,7 +111,7 @@ class ExpenseService(IExpenseService):
             return expense_responses
         except Exception as ex:
             logger_message = f"Error retrieving expenses, skip: {skip}, limit: {limit}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="ExpenseService.GetExpenses",
@@ -131,13 +130,12 @@ class ExpenseService(IExpenseService):
 
             if existing_category:
                 logger_message = f"Attempt to add duplicate category '{category.name}'"
-                self.file_and_db_handler_log.logger(
-                    loglevel="WARNING",
-                    message=logger_message,
-                    event_source="ExpenseService.AddCategory",
-                    exception="Category already exists",
-                    user_id=user_id
-                )
+                self._log(user_id,
+                          "WARNING",
+                          logger_message,
+                          "ExpenseService.AddCategory",
+                          "Category already exists")
+
                 raise Exception("Category already exists")
 
             db_category = CategoryModel(
@@ -151,13 +149,10 @@ class ExpenseService(IExpenseService):
             self.db.refresh(db_category)
 
             logger_message = f"Category '{category.name}' added successfully"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="ExpenseService.AddCategory",
-                exception="NULL",
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "INFO",
+                      logger_message,
+                      "ExpenseService.AddCategory")
 
             return CategoryResponse(
                 id=db_category.id,
@@ -166,13 +161,12 @@ class ExpenseService(IExpenseService):
             )
         except Exception as ex:
             logger_message = f"Error adding category '{category.name}'"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="ExpenseService.AddCategory",
-                exception=str(ex),
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "ExpenseService.AddCategory",
+                      str(ex))
+
             raise ex
 
     def get_categories(self, user_id: int) -> List[CategoryResponse]:
@@ -190,7 +184,7 @@ class ExpenseService(IExpenseService):
             ]
             
             logger_message = f"Retrieved {len(result)} categories"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="ExpenseService.GetCategories",
@@ -201,7 +195,7 @@ class ExpenseService(IExpenseService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving categories"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="ExpenseService.GetCategories",
@@ -214,13 +208,12 @@ class ExpenseService(IExpenseService):
         try:
             if request.datetime > datetime.now():
                 logger_message = f"Attempt to edit expense with future date by user"
-                self.file_and_db_handler_log.logger(
-                    loglevel="WARNING",
-                    message=logger_message,
-                    event_source="ExpenseService.EditExpenseList",
-                    exception="Future date not allowed",
-                    user_id=user_id
-                )
+                self._log(user_id,
+                          "WARNING",
+                          logger_message,
+                          "ExpenseService.EditExpenseList",
+                          "Future date not allowed")
+
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="You can't add the future expense, correct the date"
@@ -229,7 +222,7 @@ class ExpenseService(IExpenseService):
             transaction = self.db.query(TransactionModel).filter(TransactionModel.user_id == user_id , TransactionModel.id == request.transaction_id).first()
             if transaction is None:
                 logger_message = f"No transaction found for user {user_id} and transaction id {request.transaction_id}"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="WARNING",
                     message=logger_message,
                     event_source="ExpenseService.EditExpenseList",
@@ -244,7 +237,7 @@ class ExpenseService(IExpenseService):
             category_model = self.db.query(CategoryModel).filter(CategoryModel.id == request.category_id).first()
             if category_model is None:
                 logger_message = f"No category found for category id {request.category_id}"
-                self.file_and_db_handler_log.logger(
+                self.file_and_db_handler_log.file_logger(
                     loglevel="WARNING",
                     message=logger_message,
                     event_source="ExpenseService.EditExpenseList",
@@ -266,24 +259,20 @@ class ExpenseService(IExpenseService):
             self.db.refresh(transaction)
 
             logger_message = f"Expense list updated successfully for category {category_model.name}"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="ExpenseService.EditExpenseList",
-                exception="NULL",
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "INFO",
+                      logger_message,
+                      "ExpenseService.EditExpenseList")
 
             return f"Successfully updated expense list"
         except Exception as ex:
             logger_message = f"Error editing expense list, transaction id {request.transaction_id}"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="ExpenseService.EditExpenseList",
-                exception=str(ex),
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "ExpenseService.EditExpenseList",
+                      str(ex))
+
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
@@ -309,23 +298,19 @@ class ExpenseService(IExpenseService):
             self.db.commit()
 
             logger_message = f"Successfully deleted expense item '{category_name}' against payment method {payment_method}"
-            self.file_and_db_handler_log.logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="ExpenseService.DeleteExpenseListItem",
-                exception="NULL",
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "INFO",
+                      logger_message,
+                      "ExpenseService.DeleteExpenseListItem")
             return f"Successfully deleted expense item '{category_name}' against payment method {payment_method}"
         except Exception as ex:
             logger_message = f"Error deleting expense item, transaction id {transaction_id}"
-            self.file_and_db_handler_log.logger(
-                loglevel="ERROR",
-                message=logger_message,
-                event_source="ExpenseService.DeleteExpenseListItem",
-                exception=str(ex),
-                user_id=user_id
-            )
+            self._log(user_id,
+                      "ERROR",
+                      logger_message,
+                      "ExpenseService.DeleteExpenseListItem",
+                      str(ex))
+
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex

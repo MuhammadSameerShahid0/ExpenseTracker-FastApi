@@ -21,7 +21,7 @@ class AnalyticsService(IAnalyticsService):
             result = float(total) if total else 0.0
             
             logger_message = f"Total expense amount retrieved: {result}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AnalyticsService.TotalExpenseAmount",
@@ -32,7 +32,7 @@ class AnalyticsService(IAnalyticsService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving total expense amount: {ex}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AnalyticsService.TotalExpenseAmount",
@@ -55,7 +55,7 @@ class AnalyticsService(IAnalyticsService):
                 result = 0.0
                 
             logger_message = f"Monthly expense amount, year {year}, month {month}: {result}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AnalyticsService.MonthlyExpenseAmount",
@@ -66,7 +66,7 @@ class AnalyticsService(IAnalyticsService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving monthly expense amount, year {year}, month {month}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AnalyticsService.MonthlyExpenseAmount",
@@ -82,7 +82,7 @@ class AnalyticsService(IAnalyticsService):
             ).count()
             
             logger_message = f"Total transaction count retrieved: {result}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AnalyticsService.TotalTransactions",
@@ -93,7 +93,7 @@ class AnalyticsService(IAnalyticsService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving total transaction count"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AnalyticsService.TotalTransactions",
@@ -111,7 +111,7 @@ class AnalyticsService(IAnalyticsService):
             ).count()
             
             logger_message = f"Monthly transaction count retrieved, year {year}, month {month}: {result}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AnalyticsService.MonthlyTransactions",
@@ -122,7 +122,7 @@ class AnalyticsService(IAnalyticsService):
             return result
         except Exception as ex:
             logger_message = f"Error retrieving monthly transaction count, year {year}, month {month}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AnalyticsService.MonthlyTransactions",
@@ -156,7 +156,7 @@ class AnalyticsService(IAnalyticsService):
                 )
                 
             logger_message = f"Recent transactions retrieved, limit {limit}: {len(results)} transactions found"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
                 event_source="AnalyticsService.RecentTransactions",
@@ -167,7 +167,7 @@ class AnalyticsService(IAnalyticsService):
             return results
         except Exception as ex:
             logger_message = f"Error retrieving recent transactions, limit {limit}"
-            self.file_and_db_handler_log.logger(
+            self.file_and_db_handler_log.file_logger(
                 loglevel="ERROR",
                 message=logger_message,
                 event_source="AnalyticsService.RecentTransactions",
