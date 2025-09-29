@@ -1,0 +1,8 @@
+2025-09-29 19:17:21,475 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:17:24,941 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:18:58,685 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:19:02,441 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:19:34,002 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:19:36,796 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:19:55,617 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1
+2025-09-29 19:19:59,449 - BudgetService.BudgetMonthTotal - INFO - Retrieved monthly budget total 0 for user, month 9 , user_id : 1

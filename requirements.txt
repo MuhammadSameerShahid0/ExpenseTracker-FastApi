@@ -1,0 +1,28 @@
+starlette
+fastapi
+uvicorn
+pydevd_pycharm
+SQLAlchemy
+psycopg2-binary
+pydantic
+alembic
+
+#Google OAuth2.0
+itsdangerous
+httpx
+authlib
+python-dotenv
+PyJWT
+
+#2FA with google authenticator
+pyotp
+qrcode[PIL]
+Pillow
+
+#unittest with pytest and testclient
+pytest
+httpx #(httpx is used under the hood by TestClient)
+
+#Password hash (passlib contains the salt in hash)
+passlib[bcrypt]
+pyodbc
