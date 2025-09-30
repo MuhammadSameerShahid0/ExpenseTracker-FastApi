@@ -18,19 +18,21 @@ load_dotenv()
 app = FastAPI()
 
 origins = [
-    "https://expense-tracker-fast-api.vercel.app",
-    "https://expense-tracker-python-fast-api.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
+        "https://expense-tracker-fast-api.vercel.app",
+        "https://expense-tracker-python-fast-api.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ]
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # In production, replace with specific origins
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],  # Or specify headers: ["Content-Type", "Authorization", "Accept"]
+    expose_headers=["*"],  # Add this line
+    max_age=600,  # Cache preflight response for 10 minutes
 )
 
 app.add_middleware(
