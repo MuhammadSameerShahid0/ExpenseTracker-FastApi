@@ -48,7 +48,7 @@ class ExpenseService(IExpenseService):
             db_expense = TransactionModel(
                 amount=expense.amount,
                 description=expense.description,
-                date=datetime.now,
+                date=datetime.now(),
                 category_id=category.id,
                 user_id=user_id,
                 payment_method = expense.payment_method

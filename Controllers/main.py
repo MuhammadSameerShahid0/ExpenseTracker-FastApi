@@ -21,7 +21,7 @@ origins = [
         "https://expense-tracker-fast-api.vercel.app",
         "https://expense-tracker-python-fast-api.vercel.app",
         "http://localhost:5173",
-        "http://localhost:3000",
+        "http://localhost:8000",
     ]
 
 # Add CORS middleware
@@ -30,9 +30,9 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],  # Or specify headers: ["Content-Type", "Authorization", "Accept"]
-    expose_headers=["*"],  # Add this line
-    max_age=600,  # Cache preflight response for 10 minutes
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 app.add_middleware(
