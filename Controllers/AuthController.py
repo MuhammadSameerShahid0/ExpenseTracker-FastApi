@@ -7,7 +7,6 @@ from OAuthandJWT.JWTToken import verify_jwt
 from Schema import AuthSchema
 from Schema.AuthSchema import Token, UserRegisterResponse, ChangePassword
 
-app = FastAPI()
 AuthRouter = APIRouter(tags=["Auth"])
 service_factory = MySqlServiceFactory()
 

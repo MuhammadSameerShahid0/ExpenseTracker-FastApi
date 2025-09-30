@@ -16,18 +16,26 @@ from Controllers.UserController import UserRouter
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("SECRET_KEY"),  # must be secure in production
-)
+
+origins = [
+    "https://expense-tracker-fast-api.vercel.app",
+    "https://expense-tracker-python-fast-api.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://expense-tracker-fast-api.vercel.app"],  # In production, replace with specific origins
+    allow_origins=origins,  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY"),  # must be secure in production
 )
 
 app.include_router(AuthRouter, prefix="/api")
