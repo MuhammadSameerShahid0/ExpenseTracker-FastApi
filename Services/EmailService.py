@@ -88,14 +88,6 @@ class EmailService(IEmailService):
                         </div>
                     </div>
 
-                    <!-- Verify Link -->
-                    <div style="text-align:center; margin:35px 0;">
-                        <a href="https://localhost:44302/User/VerifyCode?code={verification_code}"
-                           style="display:inline-block; padding:12px 24px; background:#4CAF50; color:#fff; text-decoration:none; border-radius:6px; font-size:16px; font-weight:bold;">
-                            Verify Code
-                        </a>
-                    </div>
-
                     <p style="font-size:13px; color:#999; text-align:center;">
                         This code will expire in 10 minutes. If you did not request this registration, please ignore this email.
                     </p>
@@ -147,14 +139,6 @@ class EmailService(IEmailService):
                            <div style="display:inline-block; background:#4e73df; color:#fff; padding:12px 28px; font-size:24px; letter-spacing:6px; font-weight:bold; border-radius:8px;">
                                {verification_code}
                            </div>
-                       </div>
-
-                       <!-- Verify Link -->
-                       <div style="text-align:center; margin:35px 0;">
-                           <a href="https://localhost:44302/User/VerifyCode?code={verification_code}"
-                              style="display:inline-block; padding:12px 24px; background:#4CAF50; color:#fff; text-decoration:none; border-radius:6px; font-size:16px; font-weight:bold;">
-                               Verify Code
-                           </a>
                        </div>
 
                        <p style="font-size:13px; color:#999; text-align:center;">

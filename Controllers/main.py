@@ -21,6 +21,7 @@ origins = [
         "https://expense-tracker-fast-api.vercel.app",
         "https://expense-tracker-python-fast-api.vercel.app",
         "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:8000",
     ]
 

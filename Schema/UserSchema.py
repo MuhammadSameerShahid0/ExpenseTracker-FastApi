@@ -10,3 +10,8 @@ class UserDetailResponse(BaseModel):
     email: str
     created_at: datetime.datetime
     status_2fa: bool
+
+class ContactSchema(BaseModel):
+    name: str
+    subject: str
+    message: str

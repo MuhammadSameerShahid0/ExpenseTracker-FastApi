@@ -27,7 +27,7 @@ class ServiceFactory:
         service_cls = ServiceFactory._services.get(service_type.lower())
         if not service_cls:
             raise Exception(f"Service type {service_type} is not supported")
-        if service_type == "auth":
+        if service_type == "auth" or service_type == "user":
             email_service = EmailService()
             return service_cls(db, email_service)
         return service_cls(db)

@@ -91,7 +91,7 @@ class TwoFaService(ITwoFaService):
             user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
             if user:
                 if user.secret_2fa:
-                    user.secret_2fa = "NULL"
+                    user.secret_2fa = None
                     user.status_2fa = False
 
                     self.db.commit()

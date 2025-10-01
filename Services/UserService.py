@@ -1,14 +1,18 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 
 from Interfaces.IUserService import IUserService
-from Schema.UserSchema import UserDetailResponse
+from Schema.UserSchema import UserDetailResponse, ContactSchema
 from Models.Table.User import User as UserModel
 from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
+from Services.EmailService import EmailService
+
 
 class UserService(IUserService):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session,email_service: EmailService):
         self.db = db
+        self.email_service = email_service
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
     def get_user_details(self, user_id: int) -> UserDetailResponse:
@@ -54,3 +58,14 @@ class UserService(IUserService):
                 user_id=user_id
             )
             raise ex
+
+    def contact_message(self, request: ContactSchema):
+        subject = request.subject
+        body = request.message
+        if subject.__contains__("@"):
+            self.email_service.send_email("jakehken728@gmail.com", subject, body)
+            return f"Thank you '{request.name}'! Your message has been sent successfully."
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Kindly add your email/mail in subject, ThankYou!")
