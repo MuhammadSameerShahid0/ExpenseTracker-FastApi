@@ -5,13 +5,15 @@ from typing import Optional
 
 import pyotp
 from fastapi import HTTPException, Request
+from google.auth.transport import requests
+from google.oauth2 import id_token
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import RedirectResponse
 
+from Interfaces.IAuthService import IAuthService
 from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
 from Models.Table.User import User as UserModel
-from Interfaces.IAuthService import IAuthService
 from OAuthandJWT.JWTToken import create_jwt
 from OAuthandJWT.oauth_config import google_oauth
 from PasslibPasswordHash.hashpassword import hash_password, verify_password_and_hash
@@ -19,6 +21,9 @@ from Schema import AuthSchema
 from Schema.AuthSchema import UserRegisterResponse, Token, ChangePassword
 from Services.EmailService import EmailService
 from TwoFAgoogle.SecretandQRCode import generate_2fa_secret, generate_qrcode
+
+client_id=os.getenv("CLIENT_ID"),
+client_secret=os.getenv("CLIENT_SECRET"),
 
 class AuthService(IAuthService):
     def __init__(self, db: Session, email_service: EmailService):
@@ -98,29 +103,60 @@ class AuthService(IAuthService):
                     )
 
                 #User registered via Google
-                if user_model.google_id:
-                    token = create_jwt({
-                        "id": user_model.id,
-                        "email": user_model.email,
-                        "username": user_model.fullname,
-                        "from_project": "ExpenseTracker"
-                    })
-
-                    self._log(user_model.id, "INFO", "Google Login Successful", "AuthService.Login")
-
-                    if frontend_redirect_uri:
-                        return self._build_redirect(frontend_redirect_uri, "/dashboard", {
-                            "access_token": token, "token_type": "bearer"
+                if user_model.status_2fa is False:
+                    if user_model.google_id:
+                        token = create_jwt({
+                            "id": user_model.id,
+                            "email": user_model.email,
+                            "username": user_model.fullname,
+                            "from_project": "ExpenseTracker"
                         })
 
-                    return Token(access_token=token, token_type="bearer")
+                        self._log(user_model.id, "INFO", "Google Login Successful", "AuthService.Login")
 
-                #User registered manually (no google_id)
-                return self._handle_error(
-                    request,
-                    "login_permission",
-                    "Login manually, you don’t have permission to login with Google"
-                )
+                        if frontend_redirect_uri:
+                            return self._build_redirect(frontend_redirect_uri, "/dashboard", {
+                                "access_token": token, "token_type": "bearer"
+                            })
+
+                        return Token(access_token=token, token_type="bearer")
+
+                    #User registered manually (no google_id)
+                    return self._handle_error(
+                        request,
+                        "login_permission",
+                        "Login manually, you don’t have permission to login with Google"
+                    )
+
+                if user_model.status_2fa is True:
+                    if user_model.google_id:
+                        code = self.email_service.email_code()
+
+                        subject = f"(ExpenseTracker) You have logged-in via google, login code {code}"
+                        body = self.email_service.login_template(code, user_model.fullname)
+                        self.email_service.send_email(
+                            user_model.email,
+                            subject,
+                            body
+                        )
+                        request.session["Email code"] = code
+                        request.session["2FA Secret"] = user_model.secret_2fa
+                        request.session["Email"] = user_model.email
+                        request.session["User Name"] = user_model.username
+                        request.session["id"] = user_model.id
+
+                        self._log(user_model.id,
+                                  "INFO",
+                                  "Credentials verified, Email code and authenticator otp required",
+                                  "AuthService.Login")
+
+                        return "Login successful, Enter the email code and Authenticator OTP"
+
+                    return self._handle_error(
+                        request,
+                        "login_permission",
+                        "Login manually, you don’t have permission to login with Google"
+                    )
 
             new_user = UserModel(
                 google_id=user_info['sub'],
@@ -266,30 +302,28 @@ class AuthService(IAuthService):
             if user_exists is None:
               errors.append("Entered Email doesn't exist")
 
-            if user_exists is not None:
-                if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
-                    self._log(user_exists.id,
-                              "ERROR",
-                              f"User '{user_exists.email}' tried to login manually, but account registered with google",
-                              "AuthService.Login")
+            if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
+                self._log(user_exists.id,
+                          "ERROR",
+                          f"User '{user_exists.email}' tried to login manually, but account registered with google",
+                          "AuthService.Login")
 
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Kindly login with google"
-                    )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Kindly login with google"
+                )
 
-            if user_exists is not None:
-                verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
-                if not verify_password:
-                    errors.append("Entered password not correct")
+            verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
+            if not verify_password:
+                errors.append("Entered password not correct")
 
-                if user_exists.is_active is False:
-                    self._log(user_exists.id,
-                              "INFO",
-                              "Credentials verified, But account not active",
-                              "AuthService.Login")
+            if user_exists.is_active is False:
+                self._log(user_exists.id,
+                          "INFO",
+                          "Credentials verified, But account not active",
+                          "AuthService.Login")
 
-                    errors.append("Account not active, re-active if you want")
+                errors.append("Account not active, re-active if you want")
 
             errors_len = len(errors)
             if errors_len > 0:
@@ -521,8 +555,6 @@ class AuthService(IAuthService):
                 status_code=code,
                 detail=str(ex)
             )
-
-        # endregion Verify code and otp
     # endregion Verify code and otp
 
     # region Delete , active and inactive
@@ -765,6 +797,121 @@ class AuthService(IAuthService):
                       logger_message,
                       "AuthService.ChangePassword")
 
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    def google_oauth_cred_from_frontend(self, code: str, request: Request):
+        code = request.query_params.get('code')
+
+        if not code:
+            return self._handle_error(request, "google_auth_failed", "Failed to fetch Google user info")
+
+        try:
+            user_info = id_token.verify_oauth2_token(code, requests.Request(), client_id[0])
+
+            user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
+            if user_model:
+                # User exists but inactive
+                if not user_model.is_active:
+                    self._log(user_model.id, "INFO", "Credentials verified, but account inactive", "AuthService.Login")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={"message": "Account not active, please reactivate", "email": user_model.email}
+                    )
+
+                # User registered via Google
+                if user_model.status_2fa is False:
+                    if user_model.google_id:
+                        token = create_jwt({
+                            "id": user_model.id,
+                            "email": user_model.email,
+                            "username": user_model.fullname,
+                            "from_project": "ExpenseTracker"
+                        })
+
+                        self._log(user_model.id, "INFO", "Google Login Successful", "AuthService.Login")
+
+                        return Token(access_token=token, token_type="bearer")
+
+                    # User registered manually (no google_id)
+                    return self._handle_error(
+                        request,
+                        "login_permission",
+                        "Login manually, you don’t have permission to login with Google"
+                    )
+
+                if user_model.status_2fa is True:
+                    if user_model.google_id:
+                        code = self.email_service.email_code()
+
+                        subject = f"(ExpenseTracker) You have logged-in via google, login code {code}"
+                        body = self.email_service.login_template(code, user_model.fullname)
+                        self.email_service.send_email(
+                            user_model.email,
+                            subject,
+                            body
+                        )
+                        request.session["Email code"] = code
+                        request.session["2FA Secret"] = user_model.secret_2fa
+                        request.session["Email"] = user_model.email
+                        request.session["User Name"] = user_model.username
+                        request.session["id"] = user_model.id
+
+                        self._log(user_model.id,
+                                  "INFO",
+                                  "Credentials verified, Email code and authenticator otp required",
+                                  "AuthService.Login")
+
+                        return "Login successful, Enter the email code and Authenticator OTP"
+
+                    return self._handle_error(
+                        request,
+                        "login_permission",
+                        "Login manually, you don’t have permission to login with Google"
+                    )
+
+            new_user = UserModel(
+                google_id=user_info['sub'],
+                username=user_info['name'],
+                fullname=user_info['name'],
+                email=user_info['email'],
+                password_hash="Registered with Google",
+                created_at=datetime.now(),
+                status_2fa=False,
+                secret_2fa=str(uuid.uuid4()),
+                is_active=True,
+                in_active_date=None,
+            )
+            self.db.add(new_user)
+            self.db.commit()
+            self.db.refresh(new_user)
+
+            token = create_jwt({
+                "id": new_user.id,
+                "email": new_user.email,
+                "username": new_user.fullname,
+                "from_project": "ExpenseTracker"
+            })
+
+            self._log(new_user.id, "INFO", "Google Register Successful", "AuthService.Register")
+
+            return Token(access_token=token, token_type="bearer")
+
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            logger_message = "Something went wrong, got an error"
+            self.file_and_db_handler_log.file_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="AuthService.ReActiveAccount",
+                exception="NULL",
+                user_id=None
+            )
             raise HTTPException(
                 status_code=code,
                 detail=str(ex)

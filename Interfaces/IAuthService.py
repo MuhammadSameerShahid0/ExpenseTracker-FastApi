@@ -11,7 +11,7 @@ class IAuthService(ABC):
         pass
 
     @abstractmethod
-    async def google_callback(self, request: Request) -> Token:
+    async def google_callback(self, request: Request) -> Union[str, Token]:
         pass
     @abstractmethod
     def register_user(self, request: AuthSchema.UserCreate, request_session: Request) ->  Union[str, UserRegisterResponse]:
@@ -43,4 +43,8 @@ class IAuthService(ABC):
 
     @abstractmethod
     def change_password(self, request: ChangePassword) -> str:
+        pass
+
+    @abstractmethod
+    def google_oauth_cred_from_frontend(self, code: str, request: Request) -> Union[str, Token]:
         pass

@@ -119,7 +119,7 @@ class EmailService(IEmailService):
                <!-- Header -->
                <tr>
                    <td align="center" style="background: linear-gradient(135deg, #4e73df, #1cc88a); padding:30px;">
-                       <h1 style="color:#fff; margin:0; font-size:26px;">🔐 Register Verification</h1>
+                       <h1 style="color:#fff; margin:0; font-size:26px;">🔐 Login Verification</h1>
                        <p style="color:#e9ecef; margin:8px 0 0; font-size:14px;">Secure login details from your device</p>
                    </td>
                </tr>

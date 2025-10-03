@@ -22,7 +22,7 @@ def get_current_user(payload: dict = Depends(verify_jwt)):
 async def register(request: Request, service: IAuthService = Auth_Db_DI):
     return await service.google_register(request)
 
-@AuthRouter.get("/callback", response_model=Token)
+@AuthRouter.get("/callback")
 async def callback(request: Request, service: IAuthService = Auth_Db_DI):
     return await service.google_callback(request)
 
@@ -88,3 +88,9 @@ def reactive_account_verification_email_code(code : int,
 @AuthRouter.post("/change-password")
 def change_password(request: ChangePassword, services : IAuthService = Auth_Db_DI):
     return services.change_password(request)
+
+@AuthRouter.post("/google_oauth_cred")
+def google_oauth_code_from_frontend(code : str,
+                                          request: Request,
+                                          services : IAuthService = Auth_Db_DI):
+    return services.google_oauth_cred_from_frontend(code, request)
