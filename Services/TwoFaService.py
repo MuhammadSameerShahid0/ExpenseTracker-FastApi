@@ -1,4 +1,5 @@
-from fastapi import HTTPException
+import pyotp
+from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from starlette import status
 from Models.Table.User import User as UserModel
@@ -13,7 +14,7 @@ class TwoFaService(ITwoFaService):
         self.db = db
         self.file_and_db_handler_log = FileandDbHandlerLog(db)
 
-    def enable_2fa(self, user_id: int):
+    def enable_2fa(self, user_id: int, request):
         try:
             user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
             if not user:
@@ -47,19 +48,8 @@ class TwoFaService(ITwoFaService):
             secret, otp_uri = generate_2fa_secret(user.email)
             qr_code = generate_qrcode(otp_uri)
 
-            user.secret_2fa = secret
-            user.status_2fa = True
-            self.db.commit()
-            self.db.refresh(user)
-
-            logger_message = f"2FA enabled successfully for user {user.email}"
-            self.file_and_db_handler_log.file_logger(
-                loglevel="INFO",
-                message=logger_message,
-                event_source="TwoFaService.Enable2FA",
-                exception="NULL",
-                user_id=user_id
-            )
+            request.session["2FA Secret"] = secret
+            request.session["Email"] = user.email
 
             response = User2FAResponse(
                 msg="ThankYou for enabled 2FA, Scan the qr_code from any authenticator",
@@ -139,6 +129,53 @@ class TwoFaService(ITwoFaService):
                 exception=str(ex),
                 user_id=user_id
             )
+            code = getattr(ex, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )
+
+    def after_enable2fa_verify_otp(self, code: str, request: Request, user_id: int):
+        try:
+            session_secret_2fa = request.session.get("2FA Secret")
+            session_login_email = request.session.get("Email")
+
+            user = self.db.query(UserModel).filter(UserModel.email == session_login_email).first()
+
+            if user is not None:
+                verif_top = pyotp.TOTP(session_secret_2fa)
+                if not verif_top.verify(code):
+                    logger_message = "Entered authenticator Code is invalid"
+                    self.file_and_db_handler_log.file_logger(
+                        loglevel="INFO",
+                        message=logger_message,
+                        event_source="TwoFaService.AfterEnable2FACode",
+                        exception="NULL",
+                        user_id=user_id
+                    )
+                    raise HTTPException(status_code=400,detail="Entered authenticator Code is invalid")
+
+                user.secret_2fa = session_secret_2fa
+                user.status_2fa = True
+                self.db.commit()
+                self.db.refresh(user)
+
+                logger_message = f"2FA enabled successfully for user {user.email}"
+                self.file_and_db_handler_log.file_logger(
+                    loglevel="INFO",
+                    message=logger_message,
+                    event_source="TwoFaService.Enable2FA",
+                    exception="NULL",
+                    user_id=user_id
+                )
+
+                return "2FA enabled successfully."
+
+            raise HTTPException(status_code=404,detail="User not found")
+        except Exception as ex:
             code = getattr(ex, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex

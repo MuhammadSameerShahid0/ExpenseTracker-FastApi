@@ -45,10 +45,18 @@ class ExpenseService(IExpenseService):
                           logger_message,
                           "ExpenseService.AddExpense")
 
+            from datetime import datetime, timezone
+
+            if expense.date and expense.date > datetime.now(timezone.utc):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You can't add the future expense, correct the date"
+                )
+
             db_expense = TransactionModel(
                 amount=expense.amount,
                 description=expense.description,
-                date=datetime.now(),
+                date=expense.date,
                 category_id=category.id,
                 user_id=user_id,
                 payment_method = expense.payment_method
