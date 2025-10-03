@@ -16,6 +16,7 @@ python-dotenv
 PyJWT
 google-auth
 protobuf
+requests
 
 #2FA with google authenticator
 pyotp
