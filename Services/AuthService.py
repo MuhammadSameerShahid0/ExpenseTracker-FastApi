@@ -292,7 +292,7 @@ class AuthService(IAuthService):
             )
     # endregion register
 
-    # region Login
+     # region Login
     def login(self, request: AuthSchema.LoginRequest, request_session: Request):
         global user_exists
         try:
@@ -302,28 +302,30 @@ class AuthService(IAuthService):
             if user_exists is None:
               errors.append("Entered Email doesn't exist")
 
-            if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
-                self._log(user_exists.id,
-                          "ERROR",
-                          f"User '{user_exists.email}' tried to login manually, but account registered with google",
-                          "AuthService.Login")
+            if user_exists is not None:
+                if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
+                    self._log(user_exists.id,
+                              "ERROR",
+                              f"User '{user_exists.email}' tried to login manually, but account registered with google",
+                              "AuthService.Login")
 
-                raise HTTPException(
-                    status_code=400,
-                    detail="Kindly login with google"
-                )
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Kindly login with google"
+                    )
 
-            verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
-            if not verify_password:
-                errors.append("Entered password not correct")
+            if user_exists is not None:
+                verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
+                if not verify_password:
+                    errors.append("Entered password not correct")
 
-            if user_exists.is_active is False:
-                self._log(user_exists.id,
-                          "INFO",
-                          "Credentials verified, But account not active",
-                          "AuthService.Login")
+                if user_exists.is_active is False:
+                    self._log(user_exists.id,
+                              "INFO",
+                              "Credentials verified, But account not active",
+                              "AuthService.Login")
 
-                errors.append("Account not active, re-active if you want")
+                    errors.append("Account not active, re-active if you want")
 
             errors_len = len(errors)
             if errors_len > 0:
