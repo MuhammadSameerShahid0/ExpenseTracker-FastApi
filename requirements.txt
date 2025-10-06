@@ -31,3 +31,7 @@ httpx #(httpx is used under the hood by TestClient)
 passlib[bcrypt]
 bcrypt==4.3.0
 pyodbc
+
+#Environment Db
+pydantic_settings
+pathlib
