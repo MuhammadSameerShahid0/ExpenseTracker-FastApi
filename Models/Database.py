@@ -1,13 +1,19 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Use environment variable for production
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:ViHYcSezEXjDxOmzcJYZGPqGeZmmRQsw@maglev.proxy.rlwy.net:15769/railway")
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
-# Ensure proper PostgreSQL format for SQLAlchemy
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://")
+app_env = os.getenv("APP_ENV", "development")
+
+if app_env == "production":
+    DATABASE_URL = os.getenv("DATABASE_URL_PROD")
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL_DEV")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

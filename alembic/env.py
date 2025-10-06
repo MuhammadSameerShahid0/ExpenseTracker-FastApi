@@ -1,11 +1,13 @@
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 import sys
 import os
 from alembic import context
 
+load_dotenv()
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from Models.Database import Base
@@ -57,25 +59,31 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
+    """Run migrations in 'online' mode."""
+    app_env = os.getenv("APP_ENV", "development")
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    if app_env == "production":
+        db_url = os.getenv("DATABASE_URL_PROD")
+    else:
+        db_url = os.getenv("DATABASE_URL_DEV")
 
-    """
+    if not db_url:
+        raise ValueError(f"DATABASE_URL for {app_env} environment not set.")
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        {
+            "sqlalchemy.url": db_url
+        },
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 
 if context.is_offline_mode():
