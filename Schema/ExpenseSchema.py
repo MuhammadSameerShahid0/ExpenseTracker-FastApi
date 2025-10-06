@@ -39,3 +39,8 @@ class EditExpenseList(BaseModel):
     description: str
     payment_method: str
     datetime : datetime
+
+class BudgetAgainstTransaction(BaseModel):
+    budget_limit_amount: float
+    spent_amount: float
+    category_name: str

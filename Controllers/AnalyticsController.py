@@ -72,3 +72,8 @@ def get_recent_transactions(
         return services.get_recent_transactions(current_user["id"], limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@AnalyticsRouter.get("/budget-against-transactions")
+def budget_amount_against_transactions(current_user: dict = Depends(get_current_user),
+                                       services: IAnalyticsService = Analytics_Db_DI):
+    return services.amount_budget_against_transactions(current_user["id"])

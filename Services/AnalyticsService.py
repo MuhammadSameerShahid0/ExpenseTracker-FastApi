@@ -1,11 +1,17 @@
+from datetime import datetime
 from typing import List
+
+from fastapi import HTTPException
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
+from starlette import status
+
 from Interfaces.IAnalyticsService import IAnalyticsService
-from Schema.ExpenseSchema import ExpenseResponse
+from Schema.ExpenseSchema import ExpenseResponse, BudgetAgainstTransaction
 from Models.Table.Transaction import Transaction as TransactionModel
 from Models.Table.Category import Category as CategoryModel
 from Logging.Helper.FileandDbLogHandler import FileandDbHandlerLog
+from Models.Table.Budget import Budget as BudgetModel
 
 class AnalyticsService(IAnalyticsService):
     def __init__(self, db: Session):
@@ -175,3 +181,39 @@ class AnalyticsService(IAnalyticsService):
                 user_id=user_id
             )
             raise ex
+
+    def amount_budget_against_transactions(self, user_id: int):
+        try:
+            result = []
+            month = datetime.now().month
+            user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
+                                                            BudgetModel.month == month).all()
+            if user_budget is not None:
+                for budgets in user_budget:
+                    budget_categories = self.db.query(CategoryModel).filter(CategoryModel.id == budgets.category_id).all()
+                    for categories in budget_categories:
+                        transaction_category = self.db.query(TransactionModel).filter(TransactionModel.category_id == categories.id).all()
+                        total = sum(t.amount for t in transaction_category)
+
+                        if total == 0:
+                            continue
+
+                        result.append(
+                            BudgetAgainstTransaction(
+                                budget_limit_amount= budgets.limit_amount,
+                                category_name= categories.name,
+                                spent_amount= total
+                            )
+                        )
+
+                return result
+            return 0
+        except Exception as ex:
+            code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if isinstance(ex, HTTPException):
+                raise ex
+
+            raise HTTPException(
+                status_code=code,
+                detail=str(ex)
+            )

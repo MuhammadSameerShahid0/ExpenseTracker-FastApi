@@ -23,3 +23,7 @@ class IAnalyticsService(ABC):
     @abstractmethod
     def get_recent_transactions(self, user_id: int, limit: int = 5) -> List[ExpenseResponse]:
         pass
+
+    @abstractmethod
+    def amount_budget_against_transactions(self, user_id: int):
+        pass
