@@ -34,4 +34,4 @@ pyodbc
 
 #Environment Db
 pydantic_settings
-pathlib
+#pathlib
