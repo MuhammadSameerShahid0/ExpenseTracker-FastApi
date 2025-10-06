@@ -185,7 +185,7 @@ class AnalyticsService(IAnalyticsService):
     def amount_budget_against_transactions(self, user_id: int):
         try:
             result = []
-            month = datetime.now().month
+            month = str(datetime.now().month)
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
                                                             BudgetModel.month == month).all()
             if user_budget is not None:
