@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_jwt(data: dict):
     to_encode = data.copy()
-    expires = datetime.datetime.now() + datetime.timedelta(minutes=15)
+    expires = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
     to_encode.update({"exp": expires})
     access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return access_token

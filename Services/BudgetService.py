@@ -80,7 +80,7 @@ class BudgetService(IBudgetService):
                 detail=str(ex)
             )
 
-    def get_budgets(self, user_id: int) -> List[dict]:
+    def get_budgets(self, user_id: int, month : str) -> List[dict]:
         try:
             budgets = self.db.query(
                 BudgetModel.id,
@@ -92,7 +92,8 @@ class BudgetService(IBudgetService):
             ).join(
                 CategoryModel, BudgetModel.category_id == CategoryModel.id
             ).filter(
-                BudgetModel.user_id == user_id
+                BudgetModel.user_id == user_id,
+                BudgetModel.month == month
             ).all()
 
             result = []

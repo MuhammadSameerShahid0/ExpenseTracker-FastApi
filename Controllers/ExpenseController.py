@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 
+from Cache.RedisCache import clear_cache_by_pattern, get_cache, set_cache
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
 from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
@@ -26,7 +27,10 @@ def add_expense(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        return services.add_expense(expense, current_user["id"])
+        result = services.add_expense(expense, current_user["id"])
+        clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
+        clear_cache_by_pattern(f"expenses:{current_user['id']}:*")
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -37,8 +41,15 @@ def get_expenses(
     services: IExpenseService = Expense_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"expenses:{current_user['id']}:{skip}:{limit}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
+
     try:
-        return services.get_expenses(current_user["id"], skip, limit)
+        data = services.get_expenses(current_user["id"], skip, limit)
+        set_cache(cache_key, data, ex=300)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -49,7 +60,10 @@ def add_category(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        return services.add_category(category, current_user["id"])
+        result = services.add_category(category, current_user["id"])
+        clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
+        clear_cache_by_pattern(f"categories:{current_user['id']}:*")
+        return result
     except Exception as e:
         raise HTTPException(status_code=400 if "already exists" in str(e) else 500, detail=str(e))
 
@@ -58,8 +72,15 @@ def get_categories(
     services: IExpenseService = Expense_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"categories:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
+
     try:
-        return services.get_categories(current_user["id"])
+        data = services.get_categories(current_user["id"])
+        set_cache(cache_key, data, ex=600)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -69,11 +90,18 @@ def edit_expense_list(request : EditExpenseList,
         services: IExpenseService = Expense_Db_DI,
         current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
-    return services.edit_expense_list(user_id, request)
+    result = services.edit_expense_list(user_id, request)
+
+    clear_cache_by_pattern(f"analytics:*:{user_id}*")
+    clear_cache_by_pattern(f"expenses:{user_id}:*")
+    return result
 
 @ExpenseRouter.delete("/delete_expense_list_item")
 def delete_expense_list_item(transaction_id: int,
         services: IExpenseService = Expense_Db_DI,
         current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
-    return services.delete_expense_list_item(user_id, transaction_id)
+    result = services.delete_expense_list_item(user_id, transaction_id)
+    clear_cache_by_pattern(f"analytics:*:{user_id}*")
+    clear_cache_by_pattern(f"expenses:{user_id}:*")
+    return result

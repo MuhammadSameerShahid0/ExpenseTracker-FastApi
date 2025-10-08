@@ -9,7 +9,7 @@ class IBudgetService(ABC):
         pass
 
     @abstractmethod
-    def get_budgets(self, user_id: int) -> List[dict]:
+    def get_budgets(self, user_id: int, month : str) -> List[dict]:
         pass
 
     @abstractmethod

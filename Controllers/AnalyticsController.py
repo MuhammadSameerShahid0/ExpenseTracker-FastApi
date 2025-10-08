@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 
+from Cache.RedisCache import get_cache, set_cache
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
 from Schema.ExpenseSchema import ExpenseResponse
@@ -23,8 +24,14 @@ def get_current_user(payload: dict = Depends(verify_jwt)):
 def get_total_amount(
         services: IAnalyticsService = Analytics_Db_DI,
         current_user: dict = Depends(get_current_user)):
+    cache_key = f"analytics:total_amount:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
     try:
-        return services.get_total_expense_amount(current_user["id"])
+        data = services.get_total_expense_amount(current_user["id"])
+        set_cache(cache_key, data)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -35,8 +42,14 @@ def get_monthly_total(
     services: IAnalyticsService = Analytics_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"analytics:monthly_total:{current_user['id']}:{year}:{month}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
     try:
-        return services.get_monthly_expense_amount(current_user["id"], year, month)
+        data = services.get_monthly_expense_amount(current_user["id"], year, month)
+        set_cache(cache_key, data)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -45,8 +58,15 @@ def get_total_transactions(
     services: IAnalyticsService = Analytics_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"analytics:get_total_transactions:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
     try:
-        return {"total_transactions": services.get_total_transactions(current_user["id"])}
+        data = services.get_total_transactions(current_user["id"])
+        set_cache(cache_key, data)
+        data = {"total_transactions": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -57,8 +77,14 @@ def get_monthly_transactions(
     services: IAnalyticsService = Analytics_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"analytics:get_monthly_transactions:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
     try:
-        return services.get_monthly_transactions(current_user["id"], year, month)
+        data = services.get_monthly_transactions(current_user["id"], year, month)
+        set_cache(cache_key, data)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -68,12 +94,24 @@ def get_recent_transactions(
     services: IAnalyticsService = Analytics_Db_DI,
     current_user: dict = Depends(get_current_user)
 ):
+    cache_key = f"analytics:get_recent_transactions:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
     try:
-        return services.get_recent_transactions(current_user["id"], limit)
+        data = services.get_recent_transactions(current_user["id"], limit)
+        set_cache(cache_key, data)
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @AnalyticsRouter.get("/budget-against-transactions")
 def budget_amount_against_transactions(current_user: dict = Depends(get_current_user),
                                        services: IAnalyticsService = Analytics_Db_DI):
-    return services.amount_budget_against_transactions(current_user["id"])
+    cache_key = f"analytics:budget_vs_transactions:{current_user['id']}"
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
+    data = services.amount_budget_against_transactions(current_user["id"])
+    set_cache(cache_key, data)
+    return data
