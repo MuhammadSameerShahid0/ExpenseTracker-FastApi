@@ -32,6 +32,7 @@ def add_budget(
     clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
     clear_cache_by_pattern(f"categories:{current_user['id']}:*")
     clear_cache_by_pattern(f"budget:{current_user['id']}:*")
+    clear_cache_by_pattern(f"budget:GetBudgets:{user_id}:*")
     return result
 
 @BudgetRouter.get("/budgets")
@@ -74,6 +75,7 @@ def edit_budget(
     clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
     clear_cache_by_pattern(f"categories:{current_user['id']}:*")
     clear_cache_by_pattern(f"budget:{current_user['id']}:*")
+    clear_cache_by_pattern(f"budget:GetBudgets:{user_id}:*")
     return result
 
 @BudgetRouter.delete("/delete_set_budget")
