@@ -65,7 +65,7 @@ def get_total_transactions(
     try:
         data = services.get_total_transactions(current_user["id"])
         set_cache(cache_key, data)
-        data = {"total_transactions": data}
+        data = data
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
