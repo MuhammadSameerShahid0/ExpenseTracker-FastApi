@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, FastAPI
 from sqlalchemy.orm import Session
-
 from Factory.AbstractFactory import MySqlServiceFactory
 from Interfaces.IUserService import IUserService
 from Models.Database import get_db

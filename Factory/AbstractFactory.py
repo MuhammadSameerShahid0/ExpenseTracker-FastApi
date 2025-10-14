@@ -4,11 +4,13 @@ from Factory.Interface.IAbstractFactory import IAbstractFactory
 from Factory.RegistryFactory import ServiceFactory
 from Interfaces.IBudgetService import IBudgetService
 from Interfaces.ILoggingService import ILoggingService
+from Interfaces.IPdfService import IPdfService
 from Interfaces.ITwoFaService import ITwoFaService
 from Interfaces.IAuthService import IAuthService
 from Interfaces.IExpenseService import IExpenseService
 from Interfaces.IAnalyticsService import IAnalyticsService
 from Interfaces.IUserService import IUserService
+from Interfaces.IWebhookService import IWebhookService
 
 
 class MySqlServiceFactory(IAbstractFactory):
@@ -32,3 +34,9 @@ class MySqlServiceFactory(IAbstractFactory):
 
     def budget_service(self, db: Session) -> IBudgetService:
         return ServiceFactory.get_services("budget", db)
+
+    def pdf_service(self, db:Session) -> IPdfService:
+        return ServiceFactory.get_services("pdf", db)
+
+    def webhook_service(self, db:Session) -> IWebhookService:
+        return ServiceFactory.get_services("webhook", db)
