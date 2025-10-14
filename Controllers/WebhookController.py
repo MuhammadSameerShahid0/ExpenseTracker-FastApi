@@ -1,6 +1,6 @@
 import os
 
-from fastapi import HTTPException, Depends, APIRouter, FastAPI
+from fastapi import HTTPException, Depends, APIRouter
 from requests import Session
 from starlette import status
 
@@ -11,7 +11,6 @@ from OAuthandJWT.JWTToken import verify_jwt
 from Schema.SubscriberSchema import SubscriberCreate
 from Webhook.pdf_tasks import generate_and_send_monthly_reports
 
-app = FastAPI()
 WebhookRouter = APIRouter(tags=["Webhook"])
 service_factory = MySqlServiceFactory()
 
