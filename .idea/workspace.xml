@@ -4,29 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="Implemented webhook and update the token in login side">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logging/Helper/FileandDbLogHandler.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/Helper/FileandDbLogHandler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/AnalyticsService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AnalyticsService.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/AuthService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AuthService.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/BudgetService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/BudgetService.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/ExpenseService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/ExpenseService.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/AnalyticsService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AnalyticsService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AnalyticsService.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AuthService.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/BudgetService.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/ExpenseService.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/BudgetService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/BudgetService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/ExpenseService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/ExpenseService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/LoggingService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/LoggingService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/TwoFaService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/TwoFaService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/UserService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/UserService.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="Webhooks" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -105,14 +108,82 @@
       <option name="presentableId" value="Default" />
       <updated>1759154397949</updated>
     </task>
+    <task id="LOCAL-00001" summary="Added redis with cloud and local">
+      <option name="closed" value="true" />
+      <created>1759964209806</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759964209806</updated>
+    </task>
+    <task id="LOCAL-00002" summary="solved redis problems">
+      <option name="closed" value="true" />
+      <created>1759964685565</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759964685565</updated>
+    </task>
+    <task id="LOCAL-00003" summary="solved redis problems">
+      <option name="closed" value="true" />
+      <created>1759964693456</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1759964693456</updated>
+    </task>
+    <task id="LOCAL-00004" summary="added clear cache in delete_budget">
+      <option name="closed" value="true" />
+      <created>1759964741172</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1759964741172</updated>
+    </task>
+    <task id="LOCAL-00005" summary="remove tota_transaction error from AnalyticsController">
+      <option name="closed" value="true" />
+      <created>1760373863135</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1760373863136</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Implemented webhook and update the token in login side">
+      <option name="closed" value="true" />
+      <created>1760474977607</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1760474977607</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added redis with cloud and local" />
+    <MESSAGE value="solved redis problems" />
+    <MESSAGE value="added clear cache in delete_budget" />
+    <MESSAGE value="remove tota_transaction error from AnalyticsController" />
+    <MESSAGE value="Implemented webhook and update the token in login side" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented webhook and update the token in login side" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Services/BudgetService.py</url>
-          <line>196</line>
+          <line>197</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -146,11 +217,6 @@
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py</url>
-          <line>11</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
           <line>189</line>
           <option name="timeStamp" value="11" />
@@ -164,6 +230,41 @@
           <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
           <line>249</line>
           <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/AuthController.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/AuthController.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>298</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/OAuthandJWT/JWTToken.py</url>
+          <line>16</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/BudgetController.py</url>
+          <line>54</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/EmailService.py</url>
+          <line>261</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
+          <line>305</line>
+          <option name="timeStamp" value="58" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

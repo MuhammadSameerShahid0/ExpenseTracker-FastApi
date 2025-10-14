@@ -125,7 +125,7 @@ class AuthService(IAuthService):
                     return self._handle_error(
                         request,
                         "login_permission",
-                        "Login manually, you don’t have permission to login with Google"
+                        "Login manually, you don’t have a permission to login with Google"
                     )
 
                 if user_model.status_2fa is True:
