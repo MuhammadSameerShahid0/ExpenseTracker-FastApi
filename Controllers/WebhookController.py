@@ -1,6 +1,6 @@
 import os
 
-from fastapi import HTTPException, Depends, APIRouter, FastAPI, Header
+from fastapi import HTTPException, Depends, APIRouter, FastAPI
 from requests import Session
 from starlette import status
 
