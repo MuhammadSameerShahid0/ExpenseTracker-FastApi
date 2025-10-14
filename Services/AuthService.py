@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime
 from typing import Optional
-
+from Models.Table.Subscriber import Subscriber as SubscriberModel
 import pyotp
 from fastapi import HTTPException, Request
 from google.auth.transport import requests
@@ -302,6 +302,8 @@ class AuthService(IAuthService):
             if user_exists is None:
               errors.append("Entered Email doesn't exist")
 
+            subscriber_model = self.db.query(SubscriberModel).filter(SubscriberModel.email == user_exists.email).first()
+
             if user_exists is not None:
                 if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
                     self._log(user_exists.id,
@@ -345,11 +347,13 @@ class AuthService(IAuthService):
                     subject,
                     body
                 )
+
                 request_session.session["Email code"] = code
                 request_session.session["2FA Secret"] = user_exists.secret_2fa
                 request_session.session["Email"] = user_exists.email
                 request_session.session["User Name"] = user_exists.username
                 request_session.session["id"] = user_exists.id
+                request_session.session["Subscriber isActive"] = subscriber_model.is_active if subscriber_model else False
 
                 self._log(user_exists.id,
                           "INFO",
@@ -363,6 +367,7 @@ class AuthService(IAuthService):
                     "id": user_exists.id,
                     "email": user_exists.email,
                     "username": user_exists.username,
+                    "subscriber_is_active": subscriber_model.is_active if subscriber_model else False,
                     "from_project": "ExpenseTracker"
                 })
 
@@ -493,6 +498,7 @@ class AuthService(IAuthService):
             session_login_email = request_session.session.get("Email")
             session_login_name = request_session.session.get("User Name")
             session_login_id = request_session.session.get("id")
+            subscriber_is_active = request_session.session["Subscriber isActive"]
 
             verif_top = pyotp.TOTP(session_secret_2fa)
             if not verif_top.verify(otp):
@@ -528,6 +534,7 @@ class AuthService(IAuthService):
                 "id": session_login_id,
                 "email": session_login_email,
                 "username": session_login_name,
+                "subscriber_is_active": subscriber_is_active,
                 "from_project": "ExpenseTracker"
             })
 
@@ -814,6 +821,8 @@ class AuthService(IAuthService):
             user_info = id_token.verify_oauth2_token(code, requests.Request(), client_id[0])
 
             user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
+            subscriber_model = self.db.query(SubscriberModel).filter(
+                SubscriberModel.email == user_model.email).first()
             if user_model:
                 # User exists but inactive
                 if not user_model.is_active:
@@ -830,6 +839,7 @@ class AuthService(IAuthService):
                             "id": user_model.id,
                             "email": user_model.email,
                             "username": user_model.fullname,
+                            "subscriber_is_active": subscriber_model.is_active if subscriber_model else False,
                             "from_project": "ExpenseTracker"
                         })
 
@@ -860,6 +870,7 @@ class AuthService(IAuthService):
                         request.session["Email"] = user_model.email
                         request.session["User Name"] = user_model.username
                         request.session["id"] = user_model.id
+                        request.session["Subscriber isActive"] = subscriber_model.is_active if subscriber_model else False
 
                         self._log(user_model.id,
                                   "INFO",

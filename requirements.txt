@@ -38,3 +38,7 @@ pydantic_settings
 
 #redis
 redis
+
+#pdf
+reportlab
+celery[redis]

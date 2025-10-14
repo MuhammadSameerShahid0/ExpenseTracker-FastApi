@@ -10,8 +10,10 @@ from Controllers.BudgetController import BudgetRouter
 from Controllers.ExpenseController import ExpenseRouter
 from Controllers.AnalyticsController import AnalyticsRouter
 from Controllers.LoggingController import LoggingRouter
+from Controllers.PdfController import PdfRouter
 from Controllers.TwoFAController import TwoFaRouter
 from Controllers.UserController import UserRouter
+from Controllers.WebhookController import WebhookRouter
 
 load_dotenv()
 
@@ -48,3 +50,5 @@ app.include_router(UserRouter, prefix="/api")
 app.include_router(TwoFaRouter, prefix="/api")
 app.include_router(LoggingRouter, prefix="/api")
 app.include_router(BudgetRouter, prefix="/api")
+app.include_router(PdfRouter, prefix="/api")
+app.include_router(WebhookRouter, prefix="/api")
