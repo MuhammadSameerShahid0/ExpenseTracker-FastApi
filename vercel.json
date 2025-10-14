@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "main.py"
+    }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "SECRET_KEY": "@secret_key",
+    "QSTASH_CURRENT_SIGNING_KEY": "@qstash_current_signing_key"
+  }
+}
