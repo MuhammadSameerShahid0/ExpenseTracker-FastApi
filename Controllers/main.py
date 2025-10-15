@@ -25,7 +25,7 @@ origins = [
         "http://localhost:8000",
     ]
 
-# Add CORS middleware
+#CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -38,7 +38,7 @@ app.add_middleware(
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("SECRET_KEY"),  # must be secure in production
+    secret_key=os.getenv("SECRET_KEY")
 )
 
 app.include_router(AuthRouter, prefix="/api")
@@ -50,6 +50,3 @@ app.include_router(LoggingRouter, prefix="/api")
 app.include_router(BudgetRouter, prefix="/api")
 app.include_router(PdfRouter, prefix="/api")
 app.include_router(WebhooksRouter, prefix="/api")
-
-print("✅ Routers loaded:")
-print(app.routes)
