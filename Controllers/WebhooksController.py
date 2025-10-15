@@ -53,9 +53,4 @@ def trigger_monthly_report(secret_key: str):
             detail="Unauthorized: Invalid secret key."
         )
     task = generate_and_send_monthly_reports()
-    if task == "No active subscribers found":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=task
-        )
     return {"status": "success", "message": task}
