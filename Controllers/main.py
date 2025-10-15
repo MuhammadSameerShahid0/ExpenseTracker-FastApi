@@ -1,10 +1,8 @@
 import os
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-
 from Controllers.AuthController import AuthRouter
 from Controllers.BudgetController import BudgetRouter
 from Controllers.ExpenseController import ExpenseRouter
@@ -13,7 +11,6 @@ from Controllers.LoggingController import LoggingRouter
 from Controllers.PdfController import PdfRouter
 from Controllers.TwoFAController import TwoFaRouter
 from Controllers.UserController import UserRouter
-from Controllers.Webhooks.WebhookAutoTriggerController import AutoTriggerRouter
 from Controllers.WebhooksController import WebhooksRouter
 
 load_dotenv()
@@ -53,4 +50,3 @@ app.include_router(LoggingRouter, prefix="/api")
 app.include_router(BudgetRouter, prefix="/api")
 app.include_router(PdfRouter, prefix="/api")
 app.include_router(WebhooksRouter, prefix="/api")
-app.include_router(AutoTriggerRouter, prefix="/api")

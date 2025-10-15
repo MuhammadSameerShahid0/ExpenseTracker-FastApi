@@ -1,11 +1,14 @@
 import os
 from fastapi import HTTPException, Depends, APIRouter
 from requests import Session
+from starlette import status
+
 from Factory.AbstractFactory import MySqlServiceFactory
 from Interfaces.IWebhookService import IWebhookService
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
 from Schema.SubscriberSchema import SubscriberCreate
+from Webhook.pdf_tasks import generate_and_send_monthly_reports
 
 WebhooksRouter = APIRouter(tags=["Webhooks"])
 service_factory = MySqlServiceFactory()
@@ -42,3 +45,12 @@ def monthly_report_unsubscriber(services: IWebhookService = Webhook_Db_DI,
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+@WebhooksRouter.post("/trigger-monthly-report")
+def trigger_monthly_report(secret_key: str):
+    if secret_key != SECRET_KEY_TRIGGER:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized: Invalid secret key."
+        )
+    task = generate_and_send_monthly_reports()
+    return {"status": "success", "message": task}
