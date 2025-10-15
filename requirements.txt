@@ -28,8 +28,7 @@ pytest
 httpx #(httpx is used under the hood by TestClient)
 
 #Password hash (passlib contains the salt in hash)
-passlib[bcrypt]
-bcrypt==4.3.0
+passlib[argon2]
 pyodbc
 
 #Environment Db
