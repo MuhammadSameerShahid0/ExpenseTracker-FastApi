@@ -50,3 +50,6 @@ app.include_router(LoggingRouter, prefix="/api")
 app.include_router(BudgetRouter, prefix="/api")
 app.include_router(PdfRouter, prefix="/api")
 app.include_router(WebhooksRouter, prefix="/api")
+
+print("✅ Routers loaded:")
+print(app.routes)
