@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="Implemented webhook and update the token in login side">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="added vercel.json for testing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/AnalyticsService.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/AuthService.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/BudgetService.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logs/ExpenseService.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/WebhooksController.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/WebhooksController.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AnalyticsService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AnalyticsService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/AuthService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/AuthService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/BudgetService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/BudgetService.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logs/ExpenseService.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Logs/ExpenseService.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,12 +33,20 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;MuhammadSameerShahid0&quot;
-  }
-}</component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {}
+}]]></component>
+  <component name="GitHubPullRequestState"><![CDATA[{
+  "prStates": [
+    {
+      "id": {
+        "id": "PR_kwDOP5EId86twT3B",
+        "number": 2
+      },
+      "lastSeen": 1760548902111
+    }
+  ]
+}]]></component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/MuhammadSameerShahid0/ExpenseTracker-FastApi.git&quot;,
@@ -52,21 +61,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.ExpenseTracker Debug.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/DELL/Desktop/ET-FastApi",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "to.speed.mode.migration.done": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.ExpenseTracker Debug.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/DELL/Desktop/ET-FastApi&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="ExpenseTracker Debug" type="PythonConfigurationType" factoryName="Python">
       <module name="ET-FastApi" />
@@ -156,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760474977607</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="added vercel.json for testing">
+      <option name="closed" value="true" />
+      <created>1760545819667</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1760545819667</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,7 +193,8 @@
     <MESSAGE value="added clear cache in delete_budget" />
     <MESSAGE value="remove tota_transaction error from AnalyticsController" />
     <MESSAGE value="Implemented webhook and update the token in login side" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented webhook and update the token in login side" />
+    <MESSAGE value="added vercel.json for testing" />
+    <option name="LAST_COMMIT_MESSAGE" value="added vercel.json for testing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -265,6 +283,26 @@
           <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
           <line>305</line>
           <option name="timeStamp" value="58" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/Webhooks/WebhookAutoTriggerController.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="63" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Webhook/pdf_tasks.py</url>
+          <line>13</line>
+          <option name="timeStamp" value="65" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Models/Database.py</url>
+          <line>10</line>
+          <option name="timeStamp" value="67" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/Webhooks/WebhookAutoTriggerController.py</url>
+          <line>21</line>
+          <option name="timeStamp" value="68" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
