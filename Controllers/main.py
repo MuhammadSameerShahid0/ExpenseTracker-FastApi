@@ -1,4 +1,5 @@
 import os
+import traceback
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -12,6 +13,8 @@ from Controllers.PdfController import PdfRouter
 from Controllers.TwoFAController import TwoFaRouter
 from Controllers.UserController import UserRouter
 from Controllers.WebhooksController import WebhooksRouter
+from fastapi.responses import JSONResponse
+from fastapi.requests import Request
 
 load_dotenv()
 
@@ -50,3 +53,12 @@ app.include_router(LoggingRouter, prefix="/api")
 app.include_router(BudgetRouter, prefix="/api")
 app.include_router(PdfRouter, prefix="/api")
 app.include_router(WebhooksRouter, prefix="/api")
+
+
+@app.exception_handler(Exception)
+async def all_exception_handler(request: Request, exc: Exception):
+    print("🔥 Error:", traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
