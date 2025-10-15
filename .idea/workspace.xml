@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="updated WebhooksController">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="added global expcetion for vercel">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Table/User.py" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Table/User.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py" beforeDir="false" afterPath="$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -210,7 +208,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760563245531</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="updated passwordhash use the argon2 and updated user table secret_2fa">
+      <option name="closed" value="true" />
+      <created>1760567910759</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1760567910759</updated>
+    </task>
+    <task id="LOCAL-00014" summary="added global expcetion for vercel">
+      <option name="closed" value="true" />
+      <created>1760568582017</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1760568582017</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -236,7 +250,9 @@
     <MESSAGE value="deleted auto triggered controller" />
     <MESSAGE value="testing commit" />
     <MESSAGE value="added vercel.json and update WebhooksController" />
-    <option name="LAST_COMMIT_MESSAGE" value="added vercel.json and update WebhooksController" />
+    <MESSAGE value="updated passwordhash use the argon2 and updated user table secret_2fa" />
+    <MESSAGE value="added global expcetion for vercel" />
+    <option name="LAST_COMMIT_MESSAGE" value="added global expcetion for vercel" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
