@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="added global expcetion for vercel">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="updated logs only write logs for local ENV">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" beforeDir="false" afterPath="$PROJECT_DIR$/Logging/FileAndDbLogging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -273,26 +273,6 @@
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>264</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>169</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>187</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>189</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Controllers/AuthController.py</url>
           <line>18</line>
           <option name="timeStamp" value="15" />
@@ -301,11 +281,6 @@
           <url>file://$PROJECT_DIR$/Controllers/AuthController.py</url>
           <line>48</line>
           <option name="timeStamp" value="32" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>298</line>
-          <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/OAuthandJWT/JWTToken.py</url>
@@ -338,21 +313,6 @@
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>318</line>
-          <option name="timeStamp" value="71" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>223</line>
-          <option name="timeStamp" value="73" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>225</line>
-          <option name="timeStamp" value="74" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py</url>
           <line>16</line>
           <option name="timeStamp" value="75" />
@@ -364,8 +324,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
-          <line>260</line>
-          <option name="timeStamp" value="77" />
+          <line>300</line>
+          <option name="timeStamp" value="81" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

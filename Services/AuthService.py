@@ -302,14 +302,13 @@ class AuthService(IAuthService):
             if user_exists is None:
               errors.append("Entered Email doesn't exist")
 
-            subscriber_model = self.db.query(SubscriberModel).filter(SubscriberModel.email == user_exists.email).first()
-
             if user_exists is not None:
                 if user_exists.password_hash == "Registered with Google" and  user_exists.google_id is not None:
                     self._log(user_exists.id,
                               "ERROR",
                               f"User '{user_exists.email}' tried to login manually, but account registered with google",
-                              "AuthService.Login")
+                              "AuthService.Login",
+                              "Tried to login manually, but account registered with google")
 
                     raise HTTPException(
                         status_code=400,
@@ -385,12 +384,6 @@ class AuthService(IAuthService):
             code = getattr(500, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
             if isinstance(ex, HTTPException):
                 raise ex
-
-            self._log(user_exists.id if user_exists is not None else 0,
-                      "ERROR",
-                      "Something Went Wrong, got an error",
-                      "AuthService.Login",
-                      str(ex))
 
             raise HTTPException(
                 status_code=code,
