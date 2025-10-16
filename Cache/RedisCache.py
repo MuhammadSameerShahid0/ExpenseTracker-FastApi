@@ -3,7 +3,7 @@ import os
 import redis
 from fastapi.encoders import jsonable_encoder
 
-ENV = os.getenv("APP_ENV", "development")
+ENV = os.getenv("APP_ENV")
 
 if ENV == "production":
     REDIS_HOST = os.getenv("REDIS_HOST")

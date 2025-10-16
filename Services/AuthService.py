@@ -335,6 +335,8 @@ class AuthService(IAuthService):
                     detail=str.join(" ! ", errors)
                 )
 
+            subscriber_model = self.db.query(SubscriberModel).filter(SubscriberModel.email == user_exists.email).first()
+
             # If 2FA is enabled, proceed with 2FA verification process
             if user_exists.status_2fa is True:
                 code = self.email_service.email_code()
@@ -814,10 +816,9 @@ class AuthService(IAuthService):
             user_info = id_token.verify_oauth2_token(code, requests.Request(), client_id[0])
 
             user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
-            subscriber_model = self.db.query(SubscriberModel).filter(
-                SubscriberModel.email == user_model.email).first()
             if user_model:
-                # User exists but inactive
+                subscriber_model = self.db.query(SubscriberModel).filter(
+                    SubscriberModel.email == user_exists.email).first()
                 if not user_model.is_active:
                     self._log(user_model.id, "INFO", "Credentials verified, but account inactive", "AuthService.Login")
                     raise HTTPException(
@@ -914,7 +915,7 @@ class AuthService(IAuthService):
             self.file_and_db_handler_log.file_logger(
                 loglevel="INFO",
                 message=logger_message,
-                event_source="AuthService.ReActiveAccount",
+                event_source="AuthService.GoogleLogin",
                 exception="NULL",
                 user_id=None
             )
