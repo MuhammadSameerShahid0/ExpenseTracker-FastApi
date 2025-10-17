@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="little bit changes in AuthService.py">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="corrected AuthService errors and updated APP_ENV in .env">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cache/RedisCache.py" beforeDir="false" afterPath="$PROJECT_DIR$/Cache/RedisCache.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Database.py" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/UserController.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/UserController.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -234,7 +233,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760650802719</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="corrected AuthService errors and updated APP_ENV in .env">
+      <option name="closed" value="true" />
+      <created>1760652748418</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1760652748418</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -263,7 +270,8 @@
     <MESSAGE value="updated passwordhash use the argon2 and updated user table secret_2fa" />
     <MESSAGE value="added global expcetion for vercel" />
     <MESSAGE value="little bit changes in AuthService.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="little bit changes in AuthService.py" />
+    <MESSAGE value="corrected AuthService errors and updated APP_ENV in .env" />
+    <option name="LAST_COMMIT_MESSAGE" value="corrected AuthService errors and updated APP_ENV in .env" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

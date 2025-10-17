@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, FastAPI
 from sqlalchemy.orm import Session
+
+from Cache.RedisCache import get_cache, set_cache
 from Factory.AbstractFactory import MySqlServiceFactory
 from Interfaces.IUserService import IUserService
 from Models.Database import get_db
@@ -21,7 +23,14 @@ def get_current_user(payload: dict = Depends(verify_jwt)):
 @UserRouter.get("/user_details")
 def get_user_details(services: IUserService = User_Db_DI, current_user: dict = Depends(get_current_user)):
     try:
-        return services.get_user_details(current_user["id"])
+        user_id = current_user["id"]
+        cache_key = f"Get-User-Details:{user_id}"
+        cached = get_cache(cache_key)
+        if cached:
+            return cached
+        data =  services.get_user_details(user_id)
+        set_cache(cache_key, data, ex=600)
+        return data
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 

@@ -818,7 +818,7 @@ class AuthService(IAuthService):
             user_model = self.db.query(UserModel).filter(UserModel.email == user_info['email']).first()
             if user_model:
                 subscriber_model = self.db.query(SubscriberModel).filter(
-                    SubscriberModel.email == user_exists.email).first()
+                    SubscriberModel.email == user_model.email).first()
                 if not user_model.is_active:
                     self._log(user_model.id, "INFO", "Credentials verified, but account inactive", "AuthService.Login")
                     raise HTTPException(
