@@ -1,5 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, Request
 from sqlalchemy.orm import Session
+
+from Cache.RedisCache import clear_cache_by_pattern
 from Factory.AbstractFactory import MySqlServiceFactory
 from Interfaces.ITwoFaService import ITwoFaService
 from Models.Database import get_db
@@ -21,16 +23,22 @@ def get_current_user(payload: dict = Depends(verify_jwt)):
 def enable_2fa(request: Request,
              services: ITwoFaService = TwoFa_Db_DI,
              current_user: dict = Depends(get_current_user)):
-    return services.enable_2fa(current_user["id"], request)
+    result = services.enable_2fa(current_user["id"], request)
+    clear_cache_by_pattern(f"Get-User-Details:{current_user["id"]}")
+    return result
 
 @TwoFaRouter.post("/2fa_disable")
 def disable_2fa(services: ITwoFaService = TwoFa_Db_DI,
              current_user: dict = Depends(get_current_user)):
-    return services.disable_2fa(current_user["id"])
+    result = services.disable_2fa(current_user["id"])
+    clear_cache_by_pattern(f"Get-User-Details:{current_user["id"]}")
+    return result
 
 @TwoFaRouter.post("/verify_2fa")
 def after_enable2fa_verify_otp(code : str,
                                request: Request,
                                services: ITwoFaService = TwoFa_Db_DI,
                                current_user: dict = Depends(get_current_user)):
-    return services.after_enable2fa_verify_otp(code, request, current_user["id"])
+    result = services.after_enable2fa_verify_otp(code, request, current_user["id"])
+    clear_cache_by_pattern(f"Get-User-Details:{current_user["id"]}")
+    return result

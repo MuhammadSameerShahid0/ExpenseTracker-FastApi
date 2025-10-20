@@ -72,9 +72,9 @@ def edit_budget(
 
     user_id = current_user["id"]
     result = services.edit_budget_amount(user_id, category_id, amount)
-    clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
-    clear_cache_by_pattern(f"categories:{current_user['id']}:*")
-    clear_cache_by_pattern(f"budget:{current_user['id']}:*")
+    clear_cache_by_pattern(f"analytics:*:{user_id}*")
+    clear_cache_by_pattern(f"categories:{user_id}:*")
+    clear_cache_by_pattern(f"budget:{user_id}:*")
     clear_cache_by_pattern(f"budget:GetBudgets:{user_id}:*")
     return result
 
@@ -86,8 +86,8 @@ def delete_budget(
 
     user_id = current_user["id"]
     result = services.delete_set_budget(user_id, category_id)
-    clear_cache_by_pattern(f"analytics:*:{current_user['id']}*")
-    clear_cache_by_pattern(f"categories:{current_user['id']}:*")
-    clear_cache_by_pattern(f"budget:{current_user['id']}:*")
+    clear_cache_by_pattern(f"analytics:*:{user_id}*")
+    clear_cache_by_pattern(f"categories:{user_id}:*")
+    clear_cache_by_pattern(f"budget:{user_id}:*")
     clear_cache_by_pattern(f"budget:GetBudgets:{user_id}:*")
     return result

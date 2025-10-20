@@ -318,7 +318,10 @@ class AuthService(IAuthService):
             if user_exists is not None:
                 verify_password = verify_password_and_hash(request.password, user_exists.password_hash)
                 if not verify_password:
-                    errors.append("Entered password not correct")
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Entered password not correct"
+                    )
 
                 if user_exists.is_active is False:
                     self._log(user_exists.id,
@@ -419,7 +422,7 @@ class AuthService(IAuthService):
             if session_email_code is None:
                 errors.append("Session Expired code not found")
 
-            if str(session_email_code).strip() != str(code).strip():
+            if str(session_email_code).zfill(6).strip() != str(code).zfill(6).strip():
                 logger_message = "Entered Email Code is invalid"
                 self.file_and_db_handler_log.file_logger(
                     loglevel="INFO",
@@ -507,7 +510,7 @@ class AuthService(IAuthService):
                 )
                 errors.append("Invalid OTP code")
 
-            if str(session_email_code).strip() != str(code).strip():
+            if str(session_email_code).zfill(6).strip() != str(code).zfill(6).strip():
                 logger_message = "Entered Email Code is invalid"
                 self.file_and_db_handler_log.file_logger(
                     loglevel="INFO",
@@ -672,7 +675,7 @@ class AuthService(IAuthService):
             session_login_name = request_session.session.get("User Name")
             session_login_id = request_session.session.get("id")
 
-            if str(session_email_code).strip() != str(code).strip():
+            if str(session_email_code).zfill(6).strip() != str(code).zfill(6).strip():
                 logger_message = f"Entered code '{code}' is invalid"
                 self.file_and_db_handler_log.file_logger(
                     loglevel="INFO",

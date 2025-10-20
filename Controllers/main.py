@@ -57,7 +57,7 @@ app.include_router(WebhooksRouter, prefix="/api")
 
 @app.exception_handler(Exception)
 async def all_exception_handler(request: Request, exc: Exception):
-    print("🔥 Error:", traceback.format_exc())
+    print("Error:", traceback.format_exc())
     return JSONResponse(
         status_code=500,
         content={"detail": str(exc)},

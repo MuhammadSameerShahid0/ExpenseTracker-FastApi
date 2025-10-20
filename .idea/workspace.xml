@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="corrected AuthService errors and updated APP_ENV in .env">
+    <list default="true" id="a13f01f7-bcd2-44e0-b35b-f801aca791da" name="Changes" comment="updated readme">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Controllers/UserController.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/UserController.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/BudgetController.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/BudgetController.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/TwoFAController.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/TwoFAController.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Controllers/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Services/AuthService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AuthService.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/TwoFaService.py" beforeDir="false" afterPath="$PROJECT_DIR$/Services/TwoFaService.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -241,7 +244,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760652748418</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="implemented redis in UserController and correct googlelogin problem in AuthService">
+      <option name="closed" value="true" />
+      <created>1760728036581</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1760728036581</updated>
+    </task>
+    <task id="LOCAL-00018" summary="updated readme">
+      <option name="closed" value="true" />
+      <created>1760731155649</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1760731155649</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -271,7 +290,9 @@
     <MESSAGE value="added global expcetion for vercel" />
     <MESSAGE value="little bit changes in AuthService.py" />
     <MESSAGE value="corrected AuthService errors and updated APP_ENV in .env" />
-    <option name="LAST_COMMIT_MESSAGE" value="corrected AuthService errors and updated APP_ENV in .env" />
+    <MESSAGE value="implemented redis in UserController and correct googlelogin problem in AuthService" />
+    <MESSAGE value="updated readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated readme" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -327,11 +348,6 @@
           <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Controllers/WebhooksController.py</url>
-          <line>27</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/PasslibPasswordHash/hashpassword.py</url>
           <line>16</line>
           <option name="timeStamp" value="75" />
@@ -345,6 +361,31 @@
           <url>file://$PROJECT_DIR$/Services/AuthService.py</url>
           <line>300</line>
           <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/ExpenseService.py</url>
+          <line>216</line>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/WebhooksController.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Controllers/WebhooksController.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Services/WebhookService.py</url>
+          <line>42</line>
+          <option name="timeStamp" value="88" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Cache/RedisCache.py</url>
+          <line>77</line>
+          <option name="timeStamp" value="89" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

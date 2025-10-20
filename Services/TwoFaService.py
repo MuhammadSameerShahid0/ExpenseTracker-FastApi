@@ -42,7 +42,7 @@ class TwoFaService(ITwoFaService):
                 )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"2FA already enabled for {user.email}"
+                    detail=f"2FA already enabled for your account {user.fullname}"
                 )
 
             secret, otp_uri = generate_2fa_secret(user.email)
@@ -87,7 +87,7 @@ class TwoFaService(ITwoFaService):
                     self.db.commit()
                     self.db.refresh(user)
 
-                    logger_message = f"2FA disabled successfully for user {user.email}"
+                    logger_message = f"2FA disabled successfully for you {user.fullname}"
                     self.file_and_db_handler_log.file_logger(
                         loglevel="INFO",
                         message=logger_message,
@@ -163,7 +163,7 @@ class TwoFaService(ITwoFaService):
                 self.db.commit()
                 self.db.refresh(user)
 
-                logger_message = f"2FA enabled successfully for user {user.email}"
+                logger_message = f"2FA enabled successfully for you {user.fullname}"
                 self.file_and_db_handler_log.file_logger(
                     loglevel="INFO",
                     message=logger_message,
