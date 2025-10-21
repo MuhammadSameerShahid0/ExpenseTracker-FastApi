@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
-
 from Cache.RedisCache import get_cache, set_cache
 from Models.Database import get_db
 from OAuthandJWT.JWTToken import verify_jwt
