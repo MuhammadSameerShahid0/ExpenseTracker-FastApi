@@ -1,7 +1,8 @@
 from typing import List
 from fastapi import HTTPException
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 from starlette import status
 from Interfaces.IExpenseService import IExpenseService
 from Schema.ExpenseSchema import ExpenseCreate, ExpenseResponse, CategoryCreate, CategoryResponse, EditExpenseList
@@ -327,3 +328,49 @@ class ExpenseService(IExpenseService):
                 status_code=code,
                 detail=str(ex)
             )
+
+    #Helper Method
+    def get_previous_month_expenses(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ExpenseResponse]:
+        try:
+            last_day_prev_month = datetime.now().replace(day=1) - timedelta(days=1)
+            prev_month_number = last_day_prev_month.month
+            prev_year_number = last_day_prev_month.year
+
+            expenses = self.db.query(TransactionModel).filter(
+                TransactionModel.user_id == user_id,
+                extract('month', TransactionModel.date) == prev_month_number,
+                extract('year', TransactionModel.date) == prev_year_number
+            ).order_by(TransactionModel.date.desc()).offset(skip).limit(limit).all()
+
+            expense_responses = []
+            for expense in expenses:
+                category = self.db.query(CategoryModel).filter(CategoryModel.id == expense.category_id).first()
+                expense_responses.append(ExpenseResponse(
+                    id=expense.id,
+                    amount=expense.amount,
+                    description=expense.description,
+                    date=expense.date,
+                    category_name=category.name if category else "Unknown",
+                    payment_method=expense.payment_method if expense.payment_method is not None else "Unknown"
+                ))
+
+            logger_message = f"Retrieved {len(expense_responses)} expenses, skip: {skip}, limit: {limit}"
+            self.file_and_db_handler_log.file_logger(
+                loglevel="INFO",
+                message=logger_message,
+                event_source="ExpenseService.GetExpenses",
+                exception="NULL",
+                user_id=user_id
+            )
+
+            return expense_responses
+        except Exception as ex:
+            logger_message = f"Error retrieving expenses, skip: {skip}, limit: {limit}"
+            self.file_and_db_handler_log.file_logger(
+                loglevel="ERROR",
+                message=logger_message,
+                event_source="ExpenseService.GetExpenses",
+                exception=str(ex),
+                user_id=user_id
+            )
+            raise ex

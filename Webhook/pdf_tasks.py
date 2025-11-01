@@ -6,7 +6,7 @@ from Webhook.celery_worker import celery_app
 from Services.PdfService import PdfService
 from Services.ExpenseService import ExpenseService
 from Models.Database import SessionLocal
-from datetime import datetime
+from datetime import datetime, timedelta
 from Models.Table.Subscriber import Subscriber
 
 @celery_app.task(name="generate_and_send_monthly_reports")
@@ -27,11 +27,13 @@ def generate_and_send_monthly_reports():
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
             # Generate PDF
-            expenses = expense_service.get_expenses(user.id, skip=0, limit=1000)
+            expenses = expense_service.get_previous_month_expenses(user.id, skip=0, limit=1000)
             pdf_buffer = pdf_service.generate_expenses_pdf(expenses)
 
+            last_day_prev_month = datetime.now().replace(day=1) - timedelta(days=1)
+
             # Send email
-            subject = f"Your {datetime.now().strftime('%B-%Y')} Expense Report from ExpenseTracker"
+            subject = f"Your {last_day_prev_month.strftime('%B %Y')} Expense Report from ExpenseTracker"
             body = email_service.monthly_report_pdf_template(sub.name)
             filename = f"Expense_Report_{datetime.now().strftime('%B_%Y')}.pdf"
             email_service.send_email_with_pdf(
