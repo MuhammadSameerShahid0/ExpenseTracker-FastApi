@@ -33,9 +33,9 @@ def generate_and_send_monthly_reports():
             last_day_prev_month = datetime.now().replace(day=1) - timedelta(days=1)
 
             # Send email
-            subject = f"Your {last_day_prev_month.strftime('%B %Y')} Expense Report from ExpenseTracker"
+            subject = f"Your {last_day_prev_month.strftime('%B-%Y')} Expense Report from ExpenseTracker"
             body = email_service.monthly_report_pdf_template(sub.name)
-            filename = f"Expense_Report_{datetime.now().strftime('%B_%Y')}.pdf"
+            filename = f"ExpenseTracker-{last_day_prev_month.strftime('%B-%Y')}-Report.pdf"
             email_service.send_email_with_pdf(
                 user_email=sub.email,
                 subject=subject,
