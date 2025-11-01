@@ -108,7 +108,7 @@ def get_recent_transactions(
 def budget_amount_against_transactions(month : str,
                                        current_user: dict = Depends(get_current_user),
                                        services: IAnalyticsService = Analytics_Db_DI):
-    cache_key = f"analytics:budget_vs_transactions:{current_user['id']}"
+    cache_key = f"analytics:budget_vs_transactions:{current_user['id']}:{month}"
     cached = get_cache(cache_key)
     if cached:
         return cached
