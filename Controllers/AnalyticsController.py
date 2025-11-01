@@ -105,7 +105,7 @@ def get_recent_transactions(
         raise HTTPException(status_code=500, detail=str(e))
 
 @AnalyticsRouter.get("/budget-against-transactions")
-def budget_amount_against_transactions(month : int,
+def budget_amount_against_transactions(month : str,
                                        current_user: dict = Depends(get_current_user),
                                        services: IAnalyticsService = Analytics_Db_DI):
     cache_key = f"analytics:budget_vs_transactions:{current_user['id']}"

@@ -25,5 +25,5 @@ class IAnalyticsService(ABC):
         pass
 
     @abstractmethod
-    def amount_budget_against_transactions(self, user_id: int, month: int):
+    def amount_budget_against_transactions(self, user_id: int, month: str):
         pass

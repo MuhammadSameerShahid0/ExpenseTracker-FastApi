@@ -182,7 +182,7 @@ class AnalyticsService(IAnalyticsService):
             )
             raise ex
 
-    def amount_budget_against_transactions(self, user_id: int, month: int):
+    def amount_budget_against_transactions(self, user_id: int, month: str):
         try:
             result = []
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
