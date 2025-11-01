@@ -182,17 +182,18 @@ class AnalyticsService(IAnalyticsService):
             )
             raise ex
 
-    def amount_budget_against_transactions(self, user_id: int):
+    def amount_budget_against_transactions(self, user_id: int, month: int):
         try:
             result = []
-            month = str(datetime.now().month)
             user_budget = self.db.query(BudgetModel).filter(BudgetModel.user_id == user_id,
                                                             BudgetModel.month == month).all()
             if user_budget is not None:
                 for budgets in user_budget:
                     budget_categories = self.db.query(CategoryModel).filter(CategoryModel.id == budgets.category_id).all()
                     for categories in budget_categories:
-                        transaction_category = self.db.query(TransactionModel).filter(TransactionModel.category_id == categories.id).all()
+                        transaction_category = (self.db.query(TransactionModel).filter
+                                                (TransactionModel.category_id == categories.id,
+                                                 extract('month', TransactionModel.date) == month).all())
                         total = sum(t.amount for t in transaction_category)
 
                         if total == 0:

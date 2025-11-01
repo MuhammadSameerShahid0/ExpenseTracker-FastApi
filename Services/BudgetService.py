@@ -37,7 +37,7 @@ class BudgetService(IBudgetService):
                 errors.append("Category does not exist. You need to create it first")
 
             if user_budget is not None:
-                if user_budget.month <= str(current_month):
+                if int(user_budget.month) == int(current_month):
                     errors.append(f"Category '{user_budget.category.name}' budget for this month already set")
 
             error_len = len(errors)
